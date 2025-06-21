@@ -79,4 +79,5 @@ def generate_confirmation():
     return send_file(buffer, as_attachment=True, download_name="confirmation.pdf", mimetype='application/pdf')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=10000)
+
