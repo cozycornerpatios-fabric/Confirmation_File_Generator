@@ -1,12 +1,16 @@
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import red, black
 import io
+import os
+import uuid
 import sys
 
 app = Flask(__name__)
+PDF_DIR = "pdfs"
+os.makedirs(PDF_DIR, exist_ok=True)
 
 @app.route('/generate-confirmation', methods=['GET', 'POST'])
 def generate_confirmation():
@@ -16,7 +20,7 @@ def generate_confirmation():
 
         if request.method == 'POST':
             data = request.get_json(force=True)
-        else:  # GET method
+        else:
             data = request.args
 
         required_fields = ['length', 'width', 'thickness', 'fill', 'fabric', 'zipper', 'piping', 'ties']
@@ -46,8 +50,9 @@ def generate_confirmation():
         horizontal_side = horizontal_side_in * scale_factor
         vertical_side = vertical_side_in * scale_factor
 
-        buffer = io.BytesIO()
-        c = canvas.Canvas(buffer, pagesize=letter)
+        filename = f"confirmation_{uuid.uuid4().hex}.pdf"
+        filepath = os.path.join(PDF_DIR, filename)
+        c = canvas.Canvas(filepath, pagesize=letter)
         width, height = letter
 
         c.setFont("Helvetica-Bold", 16)
@@ -87,20 +92,20 @@ def generate_confirmation():
         c.drawString(x_origin + horizontal_side / 2 - 0.2 * inch, y_origin + vertical_side + 0.1 * inch, "Zipper")
 
         c.save()
-        buffer.seek(0)
 
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name="confirmation.pdf",
-            mimetype='application/pdf'
-        )
+        return jsonify({
+            "pdf_link": f"{request.url_root}pdfs/{filename}"
+        })
 
     except Exception as e:
         print("ERROR:", e, file=sys.stderr)
         return jsonify({"error": str(e)}), 500
 
+@app.route('/pdfs/<filename>')
+def serve_pdf(filename):
+    return send_from_directory(PDF_DIR, filename)
+
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get("PORT", 10000))
     app.run(debug=True, host='0.0.0.0', port=port)
+
