@@ -8,19 +8,13 @@ import sys
 
 app = Flask(__name__)
 
-@app.route('/generate-confirmation', methods=['GET', 'POST'])
+@app.route('/generate-confirmation', methods=['POST'])
 def generate_confirmation():
     try:
-        # Log headers and JSON for debugging
         print("HEADERS:", dict(request.headers), file=sys.stderr)
         print("JSON:", request.get_json(silent=True), file=sys.stderr)
 
-        if request.method == 'POST':
-            data = request.get_json(force=True)
-        else:  # GET request
-            data = request.args
-
-        # Validate required fields
+        data = request.get_json(force=True)
         required_fields = [
             'length', 'width', 'thickness', 'fill',
             'fabric', 'zipper', 'piping', 'ties'
@@ -38,13 +32,12 @@ def generate_confirmation():
         piping = data['piping']
         ties = data['ties']
 
+        if zipper_on not in ["Short Side", "Long Side"]:
+            return jsonify({"error": "Invalid 'zipper' value. Must be 'Short Side' or 'Long Side'"}), 400
+
         is_zipper_on_long = zipper_on == "Long Side"
-        if is_zipper_on_long:
-            horizontal_side_in = max(length_in, width_in)
-            vertical_side_in = min(length_in, width_in)
-        else:
-            horizontal_side_in = min(length_in, width_in)
-            vertical_side_in = max(length_in, width_in)
+        horizontal_side_in = max(length_in, width_in) if is_zipper_on_long else min(length_in, width_in)
+        vertical_side_in = min(length_in, width_in) if is_zipper_on_long else max(length_in, width_in)
 
         max_draw_height = 4.25 * inch
         max_draw_width = 3.5 * inch
@@ -104,7 +97,7 @@ def generate_confirmation():
 
     except Exception as e:
         print("ERROR:", e, file=sys.stderr)
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     import os
