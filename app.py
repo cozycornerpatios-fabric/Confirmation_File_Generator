@@ -7,12 +7,16 @@ import io
 
 app = Flask(__name__)
 
-@app.route('/generate-confirmation', methods=['POST'])
+@app.route('/generate-confirmation', methods=['GET', 'POST'])
 def generate_confirmation():
-    data = request.json
-    length_in = data['length']
-    width_in = data['width']
-    thickness = data['thickness']
+    if request.method == 'POST':
+        data = request.json
+    else:  # GET request
+        data = request.args
+
+    length_in = int(data['length'])
+    width_in = int(data['width'])
+    thickness = int(data['thickness'])
     fill = data['fill']
     fabric = data['fabric']
     zipper_on = data['zipper']
@@ -79,5 +83,6 @@ def generate_confirmation():
     return send_file(buffer, as_attachment=True, download_name="confirmation.pdf", mimetype='application/pdf')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=10000)
-
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    app.run(debug=True, host='0.0.0.0', port=port)
