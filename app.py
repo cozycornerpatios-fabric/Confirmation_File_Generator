@@ -1,86 +1,110 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, jsonify
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import red, black
 import io
+import sys
 
 app = Flask(__name__)
 
 @app.route('/generate-confirmation', methods=['GET', 'POST'])
 def generate_confirmation():
-    if request.method == 'POST':
-        data = request.json
-    else:  # GET request
-        data = request.args
+    try:
+        # Log headers and JSON for debugging
+        print("HEADERS:", dict(request.headers), file=sys.stderr)
+        print("JSON:", request.get_json(silent=True), file=sys.stderr)
 
-    length_in = int(data['length'])
-    width_in = int(data['width'])
-    thickness = int(data['thickness'])
-    fill = data['fill']
-    fabric = data['fabric']
-    zipper_on = data['zipper']
-    piping = data['piping']
-    ties = data['ties']
+        if request.method == 'POST':
+            data = request.get_json(force=True)
+        else:  # GET request
+            data = request.args
 
-    is_zipper_on_long = zipper_on == "Long Side"
-    if is_zipper_on_long:
-        horizontal_side_in = max(length_in, width_in)
-        vertical_side_in = min(length_in, width_in)
-    else:
-        horizontal_side_in = min(length_in, width_in)
-        vertical_side_in = max(length_in, width_in)
+        # Validate required fields
+        required_fields = [
+            'length', 'width', 'thickness', 'fill',
+            'fabric', 'zipper', 'piping', 'ties'
+        ]
+        missing = [field for field in required_fields if field not in data]
+        if missing:
+            return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
 
-    max_draw_height = 4.25 * inch
-    max_draw_width = 3.5 * inch
-    scale_factor = min(max_draw_width / horizontal_side_in, max_draw_height / vertical_side_in)
-    horizontal_side = horizontal_side_in * scale_factor
-    vertical_side = vertical_side_in * scale_factor
+        length_in = int(data['length'])
+        width_in = int(data['width'])
+        thickness = int(data['thickness'])
+        fill = data['fill']
+        fabric = data['fabric']
+        zipper_on = data['zipper']
+        piping = data['piping']
+        ties = data['ties']
 
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
+        is_zipper_on_long = zipper_on == "Long Side"
+        if is_zipper_on_long:
+            horizontal_side_in = max(length_in, width_in)
+            vertical_side_in = min(length_in, width_in)
+        else:
+            horizontal_side_in = min(length_in, width_in)
+            vertical_side_in = max(length_in, width_in)
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(1 * inch, height - 1 * inch, "CONFIRMATION")
+        max_draw_height = 4.25 * inch
+        max_draw_width = 3.5 * inch
+        scale_factor = min(max_draw_width / horizontal_side_in, max_draw_height / vertical_side_in)
+        horizontal_side = horizontal_side_in * scale_factor
+        vertical_side = vertical_side_in * scale_factor
 
-    specs = [
-        "Shape: Rectangle",
-        f"Length: {length_in} inches",
-        f"Width: {width_in} inches",
-        f"Thickness: {thickness} inches",
-        f"Fill: {fill}",
-        f"Fabric: {fabric}",
-        f"Zipper Position: {zipper_on}",
-        f"Piping: {piping}",
-        f"Ties: {ties}"
-    ]
+        buffer = io.BytesIO()
+        c = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
 
-    y = height - 1.5 * inch
-    for line in specs:
-        c.drawString(1 * inch, y, line)
-        y -= 0.3 * inch
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(1 * inch, height - 1 * inch, "CONFIRMATION")
 
-    x_origin = 4.5 * inch
-    y_origin = height - 6.5 * inch
-    c.setStrokeColor(black)
-    c.rect(x_origin, y_origin, horizontal_side, vertical_side)
+        specs = [
+            "Shape: Rectangle",
+            f"Length: {length_in} inches",
+            f"Width: {width_in} inches",
+            f"Thickness: {thickness} inches",
+            f"Fill: {fill}",
+            f"Fabric: {fabric}",
+            f"Zipper Position: {zipper_on}",
+            f"Piping: {piping}",
+            f"Ties: {ties}"
+        ]
 
-    c.setFont("Helvetica", 10)
-    c.setFillColor(black)
-    c.drawString(x_origin + horizontal_side / 2 - 0.15 * inch, y_origin - 0.3 * inch, f"{horizontal_side_in}\"")
-    c.drawString(x_origin + horizontal_side + 0.1 * inch, y_origin + vertical_side / 2, f"{vertical_side_in}\"")
+        y = height - 1.5 * inch
+        for line in specs:
+            c.drawString(1 * inch, y, line)
+            y -= 0.3 * inch
 
-    c.setStrokeColor(red)
-    c.setLineWidth(2)
-    c.line(x_origin, y_origin + vertical_side, x_origin + horizontal_side, y_origin + vertical_side)
-    c.setFillColor(red)
-    c.drawString(x_origin + horizontal_side / 2 - 0.2 * inch, y_origin + vertical_side + 0.1 * inch, "Zipper")
+        x_origin = 4.5 * inch
+        y_origin = height - 6.5 * inch
+        c.setStrokeColor(black)
+        c.rect(x_origin, y_origin, horizontal_side, vertical_side)
 
-    c.save()
-    buffer.seek(0)
+        c.setFont("Helvetica", 10)
+        c.setFillColor(black)
+        c.drawString(x_origin + horizontal_side / 2 - 0.15 * inch, y_origin - 0.3 * inch, f"{horizontal_side_in}\"")
+        c.drawString(x_origin + horizontal_side + 0.1 * inch, y_origin + vertical_side / 2, f"{vertical_side_in}\"")
 
-    return send_file(buffer, as_attachment=True, download_name="confirmation.pdf", mimetype='application/pdf')
+        c.setStrokeColor(red)
+        c.setLineWidth(2)
+        c.line(x_origin, y_origin + vertical_side, x_origin + horizontal_side, y_origin + vertical_side)
+        c.setFillColor(red)
+        c.drawString(x_origin + horizontal_side / 2 - 0.2 * inch, y_origin + vertical_side + 0.1 * inch, "Zipper")
+
+        c.save()
+        buffer.seek(0)
+
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name="confirmation.pdf",
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        print("ERROR:", e, file=sys.stderr)
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
     import os
