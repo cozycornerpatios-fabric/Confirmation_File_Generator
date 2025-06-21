@@ -8,17 +8,18 @@ import sys
 
 app = Flask(__name__)
 
-@app.route('/generate-confirmation', methods=['POST'])
+@app.route('/generate-confirmation', methods=['GET', 'POST'])
 def generate_confirmation():
     try:
         print("HEADERS:", dict(request.headers), file=sys.stderr)
         print("JSON:", request.get_json(silent=True), file=sys.stderr)
 
-        data = request.get_json(force=True)
-        required_fields = [
-            'length', 'width', 'thickness', 'fill',
-            'fabric', 'zipper', 'piping', 'ties'
-        ]
+        if request.method == 'POST':
+            data = request.get_json(force=True)
+        else:  # GET method
+            data = request.args
+
+        required_fields = ['length', 'width', 'thickness', 'fill', 'fabric', 'zipper', 'piping', 'ties']
         missing = [field for field in required_fields if field not in data]
         if missing:
             return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
