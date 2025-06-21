@@ -3,7 +3,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import red, black
-import io
 import os
 import uuid
 import sys
@@ -16,12 +15,14 @@ os.makedirs(PDF_DIR, exist_ok=True)
 def generate_confirmation():
     try:
         print("HEADERS:", dict(request.headers), file=sys.stderr)
-        print("JSON:", request.get_json(silent=True), file=sys.stderr)
 
-        if request.method == 'POST':
-            data = request.get_json(force=True)
-        else:
-            data = request.args
+        # Accept both GET and POST data
+        data = request.get_json(force=True) if request.method == 'POST' else request.args.to_dict()
+
+        # Strip whitespace
+        for key in data:
+            if isinstance(data[key], str):
+                data[key] = data[key].strip()
 
         required_fields = ['length', 'width', 'thickness', 'fill', 'fabric', 'zipper', 'piping', 'ties']
         missing = [field for field in required_fields if field not in data]
@@ -108,4 +109,3 @@ def serve_pdf(filename):
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(debug=True, host='0.0.0.0', port=port)
-
