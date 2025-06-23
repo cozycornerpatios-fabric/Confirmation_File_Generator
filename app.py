@@ -94,7 +94,7 @@ def generate_clipped_trapezium():
         c.drawPath(path)
 
         # Dimension labels
-        angled_length = round(((edge**2 + ((bottom_width - top_width) / 2)**2)**0.5, 2)
+        angled_length = round(((edge**2 + ((bottom_width - top_width) / 2)**2)**0.5), 2)
         c.setFont("Helvetica", 8)
         c.drawString(x_origin + b / 2 - 14, y_origin + 4, f"{bottom_width}")
         c.drawString(x_origin + o + t / 2 - 14, y_origin + h - 9, f"{top_width}")
