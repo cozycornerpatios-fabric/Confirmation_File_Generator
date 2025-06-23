@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, url_for
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
@@ -8,7 +8,7 @@ import uuid
 import sys
 
 app = Flask(__name__)
-PDF_DIR = "pdfs"
+PDF_DIR = os.path.join(os.getcwd(), "pdfs")
 os.makedirs(PDF_DIR, exist_ok=True)
 
 @app.route('/generate-confirmation', methods=['GET', 'POST'])
@@ -16,10 +16,7 @@ def generate_confirmation():
     try:
         print("HEADERS:", dict(request.headers), file=sys.stderr)
 
-        # Accept both GET and POST data
         data = request.get_json(force=True) if request.method == 'POST' else request.args.to_dict()
-
-        # Strip whitespace
         for key in data:
             if isinstance(data[key], str):
                 data[key] = data[key].strip()
@@ -95,7 +92,7 @@ def generate_confirmation():
         c.save()
 
         return jsonify({
-            "pdf_link": f"{request.url_root}pdfs/{filename}"
+            "pdf_link": url_for('serve_pdf', filename=filename, _external=True)
         })
 
     except Exception as e:
