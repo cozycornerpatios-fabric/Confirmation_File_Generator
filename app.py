@@ -85,10 +85,10 @@ def generate_confirmation():
 
         c.setStrokeColor(red)
         c.setLineWidth(2)
-        c.line(x_origin, y_origin + vertical_side, x_origin + horizontal_side, y_origin + vertical_side)
+        zipper_y = y_origin + vertical_side + 0.1 * inch  # Shift zipper line up
+        c.line(x_origin, zipper_y, x_origin + horizontal_side, zipper_y)
         c.setFillColor(red)
-        c.drawString(x_origin + horizontal_side / 2 - 0.2 * inch, y_origin + vertical_side + 0.1 * inch, "Zipper")
-
+        c.drawString(x_origin + horizontal_side / 2 - 0.2 * inch, zipper_y + 0.1 * inch, "Zipper")
         c.save()
 
         return jsonify({
