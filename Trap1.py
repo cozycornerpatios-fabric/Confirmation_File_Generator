@@ -14,7 +14,6 @@ os.makedirs(PDF_DIR, exist_ok=True)
 
 @app.route('/generate-trapezoidPost', methods=['GET', 'POST'])
 def generate_trapezoid_post_alias():
-    return generate_trapezoid_spec()
     try:
         print("HEADERS:", dict(request.headers), file=sys.stderr)
 
