@@ -162,7 +162,7 @@ def generate_confirmation():
                 hs = horizontal_side + 2 * piping_margin
                 vs = vertical_side + 2 * piping_margin
 
-                if ties == "2 Side Short":
+                if ties == "2 Side Short" or ties=="2 Side":
                     if short_side_is_vertical:
                         mid_y = yo + vs / 2
                         draw_tie(xo, mid_y, 'left', 'horizontal')
@@ -182,7 +182,7 @@ def generate_confirmation():
                         draw_tie(xo, mid_y, 'left', 'horizontal')
                         draw_tie(xo + hs, mid_y, 'right', 'horizontal')
 
-                elif ties == "4 Side Short":
+                elif ties == "4 Side Short" or ties=="4 Side":
                     if short_side_is_vertical:
                         draw_tie(xo, yo + tie_offset, 'left', 'horizontal')
                         draw_tie(xo, yo + vs - tie_offset, 'left', 'horizontal')
