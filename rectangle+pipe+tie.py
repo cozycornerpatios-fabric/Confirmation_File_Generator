@@ -107,6 +107,12 @@ def generate_confirmation():
             c.setLineWidth(1)
             c.rect(x_origin, y_origin, horizontal_side, vertical_side)
 
+            # Draw thickness label to the left of the diagram
+            c.setFont("Helvetica", 10)
+            c.setFillColor(black)
+            c.drawRightString(x_origin - 0.15 * inch, y_origin + vertical_side / 2, f"thickness = {thickness}\"")
+
+
             if piping.lower() == "yes":
                 c.setStrokeColor(blue)
                 c.setLineWidth(1)
