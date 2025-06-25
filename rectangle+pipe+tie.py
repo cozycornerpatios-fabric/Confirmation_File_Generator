@@ -116,7 +116,7 @@ def generate_confirmation():
             c.drawRightString(x_origin - 0.15 * inch - 20, y_origin + vertical_side / 2, f"thickness = {thickness}\"")
 
 
-            if piping.lower() == "yes":
+            if piping.lower() == "yes" or piping.lower() == "piping":
                 c.setStrokeColor(blue)
                 c.setLineWidth(1)
                 c.rect(x_origin - piping_margin, y_origin - piping_margin,
