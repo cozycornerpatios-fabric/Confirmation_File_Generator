@@ -229,8 +229,15 @@ def generate_confirmation():
 def serve_pdf(filename):
     return send_from_directory(PDF_DIR, filename)
 
+from flask import render_template_string
+
+@app.route('/')
+def index():
+    return render_template_string(open("form.html").read())
+
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10001))
+    port = int(os.environ.get("PORT", 10000))
     app.run(debug=True, host='0.0.0.0', port=port)
+
 
 
