@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Confirmation Generator</title>
+</head>
+<body>
+  <h2>Confirmation Generator</h2>
+  <form method="POST" action="https://confirmation-file-generator-5.onrender.com/generate-confirmation" enctype="application/json" onsubmit="return preparePayload();">
+    <label>Customer Name: <input type="text" id="customer_name" value="Jaime Kahn"></label><br><br>
+    <label>Order ID: <input type="text" id="order_id" value="1"></label><br><br>
+    <label>Email: <input type="email" id="email" value="jaimeherbster@gmail.com"></label><br><br>
+    <label>Shipping Address (comma separated): <input type="text" id="shipping" value="17 Sherwood Ave,Greenwich CT 06831,United States,+1 914-329-2553"></label><br><br>
+    <label>Billing Address (comma separated): <input type="text" id="billing" value="Same as shipping address"></label><br><br>
+    <label>Cushions JSON:<br>
+      <textarea id="cushions" rows="10" cols="80">
+[
+  {
+    "length": 20,
+    "width": 16,
+    "thickness": 4,
+    "fill": "Polyfill",
+    "fabric": "Canvas",
+    "zipper": "Short Side",
+    "piping": "Yes",
+    "ties": "4 Side Short",
+    "quantity": 2
+  },
+  {
+    "length": 22,
+    "width": 14,
+    "thickness": 3,
+    "fill": "Foam",
+    "fabric": "Linen",
+    "zipper": "Long Side",
+    "piping": "No",
+    "ties": "2 Backside",
+    "quantity": 1
+  }
+]
+      </textarea>
+    </label><br><br>
+    <input type="submit" value="Generate Confirmation PDF">
+  </form>
+
+  <script>
+    function preparePayload() {
+      const payload = {
+        customer_name: document.getElementById('customer_name').value,
+        order_id: document.getElementById('order_id').value,
+        email: document.getElementById('email').value,
+        shipping_address: document.getElementById('shipping').value.split(','),
+        billing_address: document.getElementById('billing').value.split(','),
+        cushions: JSON.parse(document.getElementById('cushions').value)
+      };
+
+      fetch("https://confirmation-file-generator-5.onrender.com/generate-confirmation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.pdf_link) {
+          window.open(data.pdf_link, "_blank");
+        } else {
+          alert("Error: " + JSON.stringify(data));
+        }
+      });
+
+      return false;
+    }
+  </script>
+</body>
+</html>
