@@ -54,6 +54,9 @@ def generate_confirmation():
         c.showPage()
 
         for cushion in cushions:
+            if 'zipper' not in cushion:
+                return jsonify({"error": "Zipper position is required for all cushions."}), 400
+            cushion_name = cushion.get('cushion_name', 'Cushion Specifications')
             length_in = cushion['length']
             width_in = cushion['width']
             thickness = cushion['thickness']
@@ -71,7 +74,7 @@ def generate_confirmation():
             left_x = 1 * inch
             y = page_height - 1 * inch
             c.setFont("Helvetica-Bold", 14)
-            c.drawString(left_x, y, f"Cushion Specifications (Quantity: {quantity})")
+            c.drawString(left_x, y, f"{cushion_name} (Quantity: {quantity})")
             y -= 0.4 * inch
 
             specs = [
