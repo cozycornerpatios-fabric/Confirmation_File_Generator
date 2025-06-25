@@ -110,7 +110,7 @@ def generate_confirmation():
             # Draw thickness label to the left of the diagram
             c.setFont("Helvetica", 10)
             c.setFillColor(black)
-            c.drawRightString(x_origin - 0.15 * inch, y_origin + vertical_side / 2, f"thickness = {thickness}\"")
+            c.drawRightString(x_origin - 0.15 * inch - 20, y_origin + vertical_side / 2, f"thickness = {thickness}\"")
 
 
             if piping.lower() == "yes":
