@@ -187,11 +187,11 @@ def generate_trapezoid():
             c.setDash()
             c.setFont("Helvetica", 10)
             c.setFillColor(black)
-            c.drawCentredString(i_tl[0] + i_tr[0] - 250, i_tl[1] - 10, f'{top_base_in}")
-            c.drawCentredString(i_bl[0] + i_br[0] - 250, i_bl[1] + 10, f'{bottom_base_in}")
-            c.drawCentredString((i_tl[0] + i_tr[0]) / 2 + 20, (i_tl[1] + i_bl[1]) / 2, f'{height_in}")
-            c.drawString(mid_left[0] + 10, mid_left[1] - 5, f'{slant_len_in}")
-            c.drawString(mid_right[0] - 40, mid_right[1] - 5, f'{slant_len_in}")
+            c.drawCentredString(i_tl[0] + i_tr[0] - 250, i_tl[1] - 10, f"{top_base_in}\""))
+            c.drawCentredString(i_bl[0] + i_br[0] - 250, i_bl[1] + 10, f"{bottom_base_in}\""))
+            c.drawCentredString((i_tl[0] + i_tr[0]) / 2 + 20, (i_tl[1] + i_bl[1]) / 2, f"{height_in}\""))
+            c.drawString(mid_left[0] + 10, mid_left[1] - 5, f"{slant_len_in}\""))
+            c.drawString(mid_right[0] - 40, mid_right[1] - 5, f"{slant_len_in}\""))
 
             c.showPage()
 
