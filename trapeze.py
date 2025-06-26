@@ -13,7 +13,7 @@ os.makedirs(PDF_DIR, exist_ok=True)
 
 @app.route('/')
 def index():
-    return render_template_string(open("form.html").read())
+    return render_template_string(open("Index.html").read())
 
 @app.route('/generate-trapezoid', methods=['POST'])
 def generate_trapezoid():
