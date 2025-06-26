@@ -54,7 +54,6 @@ def generate_trapezoid():
             ties_option = cushion['ties']
             product_details = cushion['product_details']
 
-            # Drawing Page
             c.setFont("Helvetica-Bold", 14)
             c.drawString(100, 740, f"Tie Option: {ties_option}")
             y = 715
@@ -142,6 +141,12 @@ def generate_trapezoid():
                     (bottom_right[0], bottom_right[1], bottom_left[0], bottom_left[1]),
                     (bottom_left[0], bottom_left[1], top_left[0], top_left[1])
                 ])
+                # Add piping label
+                c.setFillColor(purple)
+                c.setFont("Helvetica-Bold", 10)
+                c.drawString(top_right[0] + 30, top_right[1] - 20, "Piping")
+                c.setStrokeColor(purple)
+                c.line(top_right[0] + 25, top_right[1] - 15, top_right[0] + 5, top_right[1] - 15)
 
             c.setStrokeColor(black)
             c.setLineWidth(1)
@@ -171,13 +176,12 @@ def generate_trapezoid():
 
             draw_ties(ties_option)
 
-            # Dotted center line
+            # Dotted line and dimensions
             c.setStrokeColor(black)
             c.setDash(3, 3)
             c.line((i_tl[0] + i_tr[0]) / 2, i_tl[1], (i_bl[0] + i_br[0]) / 2, i_bl[1])
             c.setDash()
 
-            # Dimension labels
             c.setFont("Helvetica", 10)
             c.setFillColor(black)
             c.drawCentredString(i_tl[0] + i_tr[0] - 250, i_tl[1] - 10, f'{top_base_in}"')
