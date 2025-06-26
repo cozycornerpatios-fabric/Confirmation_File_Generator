@@ -19,7 +19,6 @@ def index():
 def generate_trapezoid():
     try:
         data = request.get_json(force=True)
-
         cushions = data['cushions']
         customer_name = data['customer_name']
         order_number = data['order_number']
@@ -55,6 +54,7 @@ def generate_trapezoid():
             ties_option = cushion['ties']
             product_details = cushion['product_details']
 
+            # Drawing Page
             c.setFont("Helvetica-Bold", 14)
             c.drawString(100, 740, f"Tie Option: {ties_option}")
             y = 715
@@ -78,6 +78,8 @@ def generate_trapezoid():
             bottom_right = (x_origin + bottom_base, y_origin)
             mid_left = ((top_left[0] + bottom_left[0]) / 2, (top_left[1] + bottom_left[1]) / 2)
             mid_right = ((top_right[0] + bottom_right[0]) / 2, (top_right[1] + bottom_right[1]) / 2)
+
+            slant_len_in = round(math.hypot((bottom_base_in - top_base_in) / 2, height_in), 2)
 
             def inset_corner(corner, adj1, adj2, amount):
                 dx1, dy1 = adj1[0] - corner[0], adj1[1] - corner[1]
@@ -168,11 +170,26 @@ def generate_trapezoid():
                 c.drawString(bottom_right[0], (top_right[1] + bottom_right[1]) / 2, "Zipper")
 
             draw_ties(ties_option)
+
+            # Dotted center line
+            c.setStrokeColor(black)
+            c.setDash(3, 3)
+            c.line((i_tl[0] + i_tr[0]) / 2, i_tl[1], (i_bl[0] + i_br[0]) / 2, i_bl[1])
+            c.setDash()
+
+            # Dimension labels
+            c.setFont("Helvetica", 10)
+            c.setFillColor(black)
+            c.drawCentredString(i_tl[0] + i_tr[0] - 250, i_tl[1] - 10, f'{top_base_in}"')
+            c.drawCentredString(i_bl[0] + i_br[0] - 250, i_bl[1] + 10, f'{bottom_base_in}"')
+            c.drawCentredString((i_tl[0] + i_tr[0]) / 2 + 20, (i_tl[1] + i_bl[1]) / 2, f'{height_in}"')
+            c.drawString(mid_left[0] + 10, mid_left[1] - 5, f'{slant_len_in}"')
+            c.drawString(mid_right[0] - 40, mid_right[1] - 5, f'{slant_len_in}"')
+
             c.showPage()
 
         c.save()
         return jsonify({"pdf_link": f"/pdfs/{filename}"})
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
