@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template_string
+from flask import Flask, request, jsonify, send_from_directory, render_template_string, url_for
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import black, red, purple, green
-import math
 import os
 import uuid
+import math
 
 app = Flask(__name__)
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
@@ -19,6 +19,7 @@ def index():
 def generate_trapezoid():
     try:
         data = request.get_json(force=True)
+
         cushions = data['cushions']
         customer_name = data['customer_name']
         order_number = data['order_number']
@@ -32,7 +33,7 @@ def generate_trapezoid():
         output_path = os.path.join(PDF_DIR, filename)
         c = canvas.Canvas(output_path, pagesize=letter)
 
-        # Page 1: Customer Details
+        # Page 1: Customer Info
         c.setFont("Helvetica-Bold", 14)
         c.drawString(100, 740, "Customer Order Information")
         c.setFont("Helvetica", 12)
@@ -56,8 +57,8 @@ def generate_trapezoid():
 
             c.setFont("Helvetica-Bold", 14)
             c.drawString(100, 740, f"Tie Option: {ties_option}")
-            y = 715
             c.setFont("Helvetica", 12)
+            y = 715
             for line in product_details:
                 c.drawString(100, y, line)
                 y -= 18
@@ -77,7 +78,6 @@ def generate_trapezoid():
             bottom_right = (x_origin + bottom_base, y_origin)
             mid_left = ((top_left[0] + bottom_left[0]) / 2, (top_left[1] + bottom_left[1]) / 2)
             mid_right = ((top_right[0] + bottom_right[0]) / 2, (top_right[1] + bottom_right[1]) / 2)
-
             slant_len_in = round(math.hypot((bottom_base_in - top_base_in) / 2, height_in), 2)
 
             def inset_corner(corner, adj1, adj2, amount):
@@ -94,6 +94,13 @@ def generate_trapezoid():
             i_tr = inset_corner(top_right, top_left, bottom_right, inset)
             i_br = inset_corner(bottom_right, bottom_left, top_right, inset)
             i_bl = inset_corner(bottom_left, bottom_right, top_left, inset)
+
+            anchor_top_left = top_left if piping == "Yes" else i_tl
+            anchor_top_right = top_right if piping == "Yes" else i_tr
+            anchor_bottom_left = bottom_left if piping == "Yes" else i_bl
+            anchor_bottom_right = bottom_right if piping == "Yes" else i_br
+            anchor_mid_left = ((anchor_top_left[0] + anchor_bottom_left[0]) / 2, (anchor_top_left[1] + anchor_bottom_left[1]) / 2)
+            anchor_mid_right = ((anchor_top_right[0] + anchor_bottom_right[0]) / 2, (anchor_top_right[1] + anchor_bottom_right[1]) / 2)
 
             def draw_tie(x, y, direction):
                 c.setStrokeColor(green)
@@ -115,22 +122,22 @@ def generate_trapezoid():
 
             def draw_ties(opt):
                 if opt == "2 Back Ties":
-                    center_y = (i_tl[1] + i_bl[1]) / 2
-                    center_x_left = (i_bl[0] + i_br[0]) / 2 - 40
-                    center_x_right = (i_bl[0] + i_br[0]) / 2 + 40
+                    center_y = (anchor_top_left[1] + anchor_bottom_left[1]) / 2
+                    center_x_left = (anchor_bottom_left[0] + anchor_bottom_right[0]) / 2 - 40
+                    center_x_right = (anchor_bottom_left[0] + anchor_bottom_right[0]) / 2 + 40
                     draw_tie(center_x_left, center_y, "down")
                     draw_tie(center_x_right, center_y, "down")
                 elif opt == "2 Corner Ties":
-                    draw_tie(bottom_left[0], bottom_left[1], 'left')
-                    draw_tie(bottom_right[0], bottom_right[1], 'right')
+                    draw_tie(anchor_bottom_left[0], anchor_bottom_left[1], 'left')
+                    draw_tie(anchor_bottom_right[0], anchor_bottom_right[1], 'right')
                 elif opt == "2 Side Ties":
-                    draw_tie(mid_left[0], mid_left[1], 'left')
-                    draw_tie(mid_right[0], mid_right[1], 'right')
+                    draw_tie(anchor_mid_left[0], anchor_mid_left[1], 'left')
+                    draw_tie(anchor_mid_right[0], anchor_mid_right[1], 'right')
                 elif opt == "4 Corner Ties":
-                    draw_tie(top_left[0], top_left[1], 'left')
-                    draw_tie(top_right[0], top_right[1], 'right')
-                    draw_tie(bottom_left[0], bottom_left[1], 'left')
-                    draw_tie(bottom_right[0], bottom_right[1], 'right')
+                    draw_tie(anchor_top_left[0], anchor_top_left[1], 'left')
+                    draw_tie(anchor_top_right[0], anchor_top_right[1], 'right')
+                    draw_tie(anchor_bottom_left[0], anchor_bottom_left[1], 'left')
+                    draw_tie(anchor_bottom_right[0], anchor_bottom_right[1], 'right')
 
             if piping == "Yes":
                 c.setStrokeColor(purple)
@@ -141,11 +148,9 @@ def generate_trapezoid():
                     (bottom_right[0], bottom_right[1], bottom_left[0], bottom_left[1]),
                     (bottom_left[0], bottom_left[1], top_left[0], top_left[1])
                 ])
-                # Add piping label
                 c.setFillColor(purple)
                 c.setFont("Helvetica-Bold", 10)
                 c.drawString(top_right[0] + 30, top_right[1] - 20, "Piping")
-                c.setStrokeColor(purple)
                 c.line(top_right[0] + 25, top_right[1] - 15, top_right[0] + 5, top_right[1] - 15)
 
             c.setStrokeColor(black)
@@ -176,24 +181,23 @@ def generate_trapezoid():
 
             draw_ties(ties_option)
 
-            # Dotted line and dimensions
             c.setStrokeColor(black)
             c.setDash(3, 3)
             c.line((i_tl[0] + i_tr[0]) / 2, i_tl[1], (i_bl[0] + i_br[0]) / 2, i_bl[1])
             c.setDash()
-
             c.setFont("Helvetica", 10)
             c.setFillColor(black)
-            c.drawCentredString(i_tl[0] + i_tr[0] - 250, i_tl[1] - 10, f'{top_base_in}"')
-            c.drawCentredString(i_bl[0] + i_br[0] - 250, i_bl[1] + 10, f'{bottom_base_in}"')
-            c.drawCentredString((i_tl[0] + i_tr[0]) / 2 + 20, (i_tl[1] + i_bl[1]) / 2, f'{height_in}"')
-            c.drawString(mid_left[0] + 10, mid_left[1] - 5, f'{slant_len_in}"')
-            c.drawString(mid_right[0] - 40, mid_right[1] - 5, f'{slant_len_in}"')
+            c.drawCentredString(i_tl[0] + i_tr[0] - 250, i_tl[1] - 10, f'{top_base_in}")
+            c.drawCentredString(i_bl[0] + i_br[0] - 250, i_bl[1] + 10, f'{bottom_base_in}")
+            c.drawCentredString((i_tl[0] + i_tr[0]) / 2 + 20, (i_tl[1] + i_bl[1]) / 2, f'{height_in}")
+            c.drawString(mid_left[0] + 10, mid_left[1] - 5, f'{slant_len_in}")
+            c.drawString(mid_right[0] - 40, mid_right[1] - 5, f'{slant_len_in}")
 
             c.showPage()
 
         c.save()
-        return jsonify({"pdf_link": f"/pdfs/{filename}"})
+        return jsonify({"pdf_link": url_for('serve_pdf', filename=filename, _external=True)})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
