@@ -200,12 +200,12 @@ def generate_trapezoid():
             c.drawCentredString((i_tl[0] + i_tr[0]) / 2 + 20, (i_tl[1] + i_bl[1]) / 2, f"{height_in}\"")
             # ✅ Add thickness label neatly with dimensions
             thickness_in = cushion.get('thickness', None)
-            if thickness_in is not None:
-                c.drawCentredString(
-                    (i_tl[0] + i_tr[0]) / 2 + 20,
-                    (i_tl[1] + i_bl[1]) / 2 - 15,
-                    f"Thickness: {thickness_in}\""
-                )
+           
+            c.drawCentredString(
+                 (i_tl[0] + i_tr[0]) / 2 + 20,
+                (i_tl[1] + i_bl[1]) / 2 - 15,
+                f"Thickness: {thickness_in}\""
+            )
 
 
             c.showPage()
