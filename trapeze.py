@@ -202,7 +202,7 @@ def generate_trapezoid():
             thickness_in = cushion.get('thickness', None)
            
             c.drawCentredString(
-                i_bl[0] - 100,
+                i_bl[0] - 50,
                 (i_tl[1] + i_bl[1]) / 2 - 15,
                 f"Thickness: {thickness_in}\""
             )
