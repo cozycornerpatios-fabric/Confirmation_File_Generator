@@ -11,7 +11,7 @@ app = Flask(__name__)
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
 os.makedirs(PDF_DIR, exist_ok=True)
 
-@app.route('/generate-confirmation', methods=['POST'])
+@app.route('/generate-cushions', methods=['POST'])
 def generate_confirmation():
     try:
         data = request.get_json(force=True)
