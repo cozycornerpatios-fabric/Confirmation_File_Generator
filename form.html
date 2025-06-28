@@ -1,78 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Test Confirmation Generator</title>
+  <meta charset="UTF-8">
+  <title>Generate Cushion Confirmation PDF</title>
 </head>
 <body>
-  <h2>Confirmation Generator</h2>
-  <form method="POST" action="https://confirmation-file-generator-5.onrender.com/generate-confirmation" enctype="application/json" onsubmit="return preparePayload();">
-    <label>Customer Name: <input type="text" id="customer_name" value="Jaime Kahn"></label><br><br>
-    <label>Order ID: <input type="text" id="order_id" value="1"></label><br><br>
-    <label>Email: <input type="email" id="email" value="jaimeherbster@gmail.com"></label><br><br>
-    <label>Shipping Address (comma separated): <input type="text" id="shipping" value="17 Sherwood Ave,Greenwich CT 06831,United States,+1 914-329-2553"></label><br><br>
-    <label>Billing Address (comma separated): <input type="text" id="billing" value="Same as shipping address"></label><br><br>
-    <label>Cushions JSON:<br>
-      <textarea id="cushions" rows="12" cols="80">
-[
-  {
-    "cushion_name": "Seat Cushion - 20x16",
-    "length": 20,
-    "width": 16,
-    "thickness": 4,
-    "fill": "Polyfill",
-    "fabric": "Canvas",
-    "zipper": "Short Side",
-    "piping": "Yes",
-    "ties": "4 Side Short",
-    "quantity": 2
-  },
-  {
-    "cushion_name": "Back Cushion - 22x14",
-    "length": 22,
-    "width": 14,
-    "thickness": 3,
-    "fill": "Foam",
-    "fabric": "Linen",
-    "zipper": "Long Side",
-    "piping": "No",
-    "ties": "2 Backside",
-    "quantity": 1
-  }
-]
-      </textarea>
-    </label><br><br>
-    <input type="submit" value="Generate Confirmation PDF">
+  <h1>Generate Cushion Confirmation</h1>
+  <p>Paste your JSON data below and click "Generate" to create the confirmation PDF.</p>
+  <form id="pdfForm">
+    <textarea name="json" rows="20" cols="100" placeholder='{
+  "customer_name": "John Doe",
+  "order_id": "ORD123",
+  "email": "john@example.com",
+  "shipping_address": ["123 Main St", "City, ST 12345"],
+  "billing_address": ["456 Side St", "City, ST 67890"],
+  "cushions": [
+    {
+      "cushion_name": "Mudroom Trapezium Cushion",
+      "top_base": 37,
+      "bottom_base": 62.5,
+      "height": 24.5,
+      "zipper": "Left",
+      "piping": "Yes",
+      "ties": "2 Back Ties",
+      "thickness": 3,
+      "tie_offset_from_base": 20,
+      "quantity": 1
+    }
+  ]
+}'></textarea><br>
+    <button type="submit">Generate PDF</button>
   </form>
 
   <script>
-    function preparePayload() {
-      const payload = {
-        customer_name: document.getElementById('customer_name').value,
-        order_id: document.getElementById('order_id').value,
-        email: document.getElementById('email').value,
-        shipping_address: document.getElementById('shipping').value.split(','),
-        billing_address: document.getElementById('billing').value.split(','),
-        cushions: JSON.parse(document.getElementById('cushions').value)
-      };
-
-      fetch("https://confirmation-file-generator-5.onrender.com/generate-confirmation", {
+    document.getElementById("pdfForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      fetch("/generate-confirmation", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/json" },
+        body: document.querySelector("textarea").value
       })
       .then(res => res.json())
       .then(data => {
         if (data.pdf_link) {
-          window.open(data.pdf_link, "_blank");
+          window.location.href = data.pdf_link;
         } else {
           alert("Error: " + JSON.stringify(data));
         }
-      });
-
-      return false;
-    }
+      })
+      .catch(err => alert("Request failed: " + err));
+    });
   </script>
 </body>
 </html>
+
