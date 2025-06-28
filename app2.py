@@ -61,6 +61,8 @@ def generate_confirmation():
             else:
                 draw_rectangle(c, cushion)
 
+            c.showPage() 
+
         c.save()
         return jsonify({"pdf_link": url_for('serve_pdf', filename=filename, _external=True)})
 
