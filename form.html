@@ -1,104 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cushion Order Form</title>
+  <title>Generate Confirmation PDF</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, select, button, textarea { margin: 5px 0; display: block; width: 100%; }
+    .cushion-group { border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; }
+  </style>
 </head>
 <body>
-    <h2>Cushion Order Form</h2>
-    <form action="/generate-confirmation" method="post" enctype="application/json" onsubmit="submitForm(event)">
-        <label>Customer Name: <input type="text" id="customer_name"></label><br>
-        <label>Order ID: <input type="text" id="order_id"></label><br>
-        <label>Email: <input type="email" id="email"></label><br>
-        <label>Shipping Address (comma-separated): <input type="text" id="shipping_address"></label><br>
-        <label>Billing Address (comma-separated): <input type="text" id="billing_address"></label><br><br>
+  <h2>Generate Confirmation PDF</h2>
+  <form id="pdfForm">
+    <label>Customer Name</label><input name="customer_name" required>
+    <label>Order ID</label><input name="order_id" required>
+    <label>Email</label><input name="email" type="email" required>
+    <label>Shipping Address (one per line)</label><textarea name="shipping_address" required></textarea>
+    <label>Billing Address (one per line)</label><textarea name="billing_address" required></textarea>
 
-        <h3>Cushion Details</h3>
-        <label>Name: <input type="text" id="cushion_name"></label><br>
-        <label>Shape:
-            <select id="shape" onchange="toggleShapeFields()">
-                <option value="rectangle">Rectangle</option>
-                <option value="trapezoid">Trapezoid</option>
-            </select>
-        </label><br>
+    <h3>Cushions</h3>
+    <div id="cushionsContainer"></div>
+    <button type="button" onclick="addCushion()">Add Cushion</button>
 
-        <div id="rectangleFields">
-            <label>Length: <input type="number" step="0.1" id="length"></label><br>
-            <label>Width: <input type="number" step="0.1" id="width"></label><br>
-        </div>
+    <br><button type="submit">Generate PDF</button>
+  </form>
 
-        <div id="trapezoidFields" style="display: none;">
-            <label>Top Base: <input type="number" step="0.1" id="top_base"></label><br>
-            <label>Bottom Base: <input type="number" step="0.1" id="bottom_base"></label><br>
-            <label>Height: <input type="number" step="0.1" id="height"></label><br>
-        </div>
+  <script>
+    let cushionIndex = 0;
 
-        <label>Thickness: <input type="number" step="0.1" id="thickness"></label><br>
-        <label>Fill: <input type="text" id="fill"></label><br>
-        <label>Fabric: <input type="text" id="fabric"></label><br>
-        <label>Zipper Position: <input type="text" id="zipper"></label><br>
-        <label>Piping (Yes/No): <input type="text" id="piping"></label><br>
-        <label>Ties: <input type="text" id="ties"></label><br>
-        <label>Quantity: <input type="number" id="quantity" value="1"></label><br><br>
+    function addCushion() {
+      const container = document.getElementById("cushionsContainer");
+      const div = document.createElement("div");
+      div.className = "cushion-group";
+      div.innerHTML = `
+        <label>Cushion Name</label><input name="cushion_name_${cushionIndex}" required>
+        <label>Shape</label>
+        <select name="shape_${cushionIndex}" required>
+          <option value="rectangle">Rectangle</option>
+          <option value="trapezoid">Trapezoid</option>
+        </select>
+        <label>Length</label><input type="number" step="any" name="length_${cushionIndex}">
+        <label>Width</label><input type="number" step="any" name="width_${cushionIndex}">
+        <label>Thickness</label><input type="number" step="any" name="thickness_${cushionIndex}">
+        <label>Fill</label><input name="fill_${cushionIndex}">
+        <label>Fabric</label><input name="fabric_${cushionIndex}">
+        <label>Zipper Position</label><input name="zipper_${cushionIndex}">
+        <label>Piping</label><input name="piping_${cushionIndex}">
+        <label>Ties</label><input name="ties_${cushionIndex}">
+        <label>Quantity</label><input type="number" name="quantity_${cushionIndex}" value="1">
+      `;
+      container.appendChild(div);
+      cushionIndex++;
+    }
 
-        <button type="submit">Submit</button>
-    </form>
+    document.getElementById("pdfForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const cushions = [];
+      for (let i = 0; i < cushionIndex; i++) {
+        const cushion = {
+          cushion_name: formData.get(`cushion_name_${i}`),
+          shape: formData.get(`shape_${i}`),
+          length: parseFloat(formData.get(`length_${i}`) || 0),
+          width: parseFloat(formData.get(`width_${i}`) || 0),
+          thickness: parseFloat(formData.get(`thickness_${i}`) || 0),
+          fill: formData.get(`fill_${i}`),
+          fabric: formData.get(`fabric_${i}`),
+          zipper: formData.get(`zipper_${i}`),
+          piping: formData.get(`piping_${i}`),
+          ties: formData.get(`ties_${i}`),
+          quantity: parseInt(formData.get(`quantity_${i}`) || 1)
+        };
+        cushions.push(cushion);
+      }
 
-    <script>
-        function toggleShapeFields() {
-            const shape = document.getElementById('shape').value;
-            document.getElementById('rectangleFields').style.display = shape === 'rectangle' ? 'block' : 'none';
-            document.getElementById('trapezoidFields').style.display = shape === 'trapezoid' ? 'block' : 'none';
-        }
+      const payload = {
+        customer_name: formData.get("customer_name"),
+        order_id: formData.get("order_id"),
+        email: formData.get("email"),
+        shipping_address: formData.get("shipping_address").split("\n"),
+        billing_address: formData.get("billing_address").split("\n"),
+        cushions: cushions
+      };
 
-        function submitForm(event) {
-            event.preventDefault();
+      const response = await fetch("/generate-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-            const shape = document.getElementById('shape').value;
-            let cushion = {
-                cushion_name: document.getElementById('cushion_name').value,
-                shape: shape,
-                thickness: parseFloat(document.getElementById('thickness').value),
-                fill: document.getElementById('fill').value,
-                fabric: document.getElementById('fabric').value,
-                zipper: document.getElementById('zipper').value,
-                piping: document.getElementById('piping').value,
-                ties: document.getElementById('ties').value,
-                quantity: parseInt(document.getElementById('quantity').value)
-            };
+      const result = await response.json();
+      if (result.pdf_link) {
+        window.open(result.pdf_link, "_blank");
+      } else {
+        alert("Error: " + JSON.stringify(result));
+      }
+    });
 
-            if (shape === 'rectangle') {
-                cushion.length = parseFloat(document.getElementById('length').value);
-                cushion.width = parseFloat(document.getElementById('width').value);
-            } else {
-                cushion.top_base = parseFloat(document.getElementById('top_base').value);
-                cushion.bottom_base = parseFloat(document.getElementById('bottom_base').value);
-                cushion.height = parseFloat(document.getElementById('height').value);
-            }
-
-            const payload = {
-                customer_name: document.getElementById('customer_name').value,
-                order_id: document.getElementById('order_id').value,
-                email: document.getElementById('email').value,
-                shipping_address: document.getElementById('shipping_address').value.split(','),
-                billing_address: document.getElementById('billing_address').value.split(','),
-                cushions: [cushion]
-            };
-
-            fetch("/generate-confirmation", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.pdf_link) {
-                    window.location.href = data.pdf_link;
-                } else {
-                    alert("Error: " + JSON.stringify(data));
-                }
-            });
-        }
-    </script>
+    addCushion(); // initialize with one cushion form
+  </script>
 </body>
 </html>
 
