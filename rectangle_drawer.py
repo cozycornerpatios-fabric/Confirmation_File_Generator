@@ -174,7 +174,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo + hs + 10,yo,xo + hs + 10,yo + tie_offset)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                         c.drawString(xo - 30, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + hs + 20, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
             else:
@@ -185,7 +185,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo,yo - 10,xo + tie_offset,yo - 10)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                         c.drawString(xo + tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + tie_offset/2, yo - 20, f" {tie_offset_from_corner}\"")
 
@@ -199,7 +199,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo,yo - 10,xo + tie_offset,yo - 10)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                       c.drawString(xo + tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
                       c.drawString(xo + tie_offset/2, yo - 20, f" {tie_offset_from_corner}\"")
             else:
@@ -210,7 +210,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo + hs + 10,yo,xo + hs + 10,yo + tie_offset)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                         c.drawString(xo - 30, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + hs + 20, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
 
@@ -231,7 +231,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo + hs + 10,yo + vs,xo + hs + 10,yo + vs - tie_offset)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                         c.drawString(xo - 30, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + hs + 20, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
                         c.drawString(xo - 30, yo + vs - tie_offset/2, f" {tie_offset_from_corner}\"")
@@ -248,7 +248,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo + hs,yo - 10,xo + hs - tie_offset,yo - 10)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                         c.drawString(xo + tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + tie_offset/2, yo - 20, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + hs - tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
@@ -271,7 +271,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo + hs,yo - 10,xo + hs - tie_offset,yo - 10)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                         c.drawString(xo + tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + tie_offset/2, yo - 20, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + hs - tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
@@ -288,7 +288,7 @@ def draw_rectangle(c, cushion):
                 c.line(xo + hs + 10,yo + vs,xo + hs + 10,yo + vs - tie_offset)
                 c.setFont("Helvetica", 8)
                 c.setFillColor(green)
-                if(tie_offset>0)
+                if(tie_offset>0):
                         c.drawString(xo - 30, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
                         c.drawString(xo + hs + 20, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
                         c.drawString(xo - 30, yo + vs - tie_offset/2, f" {tie_offset_from_corner}\"")
@@ -341,7 +341,7 @@ def draw_rectangle(c, cushion):
                 c.setDash(1, 2)
                 c.line(xo - 10, yo, xo - 10, yo + tie_offset)
                 c.line(xo - 10, yo + vs, xo - 10, yo + vs - tie_offset)
-                if(tie_offset>0)
+                if(tie_offset>0):
                     c.drawString(xo - 30, yo + tie_offset / 2, f"{tie_offset_from_corner}\"")
                     c.drawString(xo - 30, yo + vs - tie_offset / 2, f"{tie_offset_from_corner}\"")
             else:
@@ -351,7 +351,7 @@ def draw_rectangle(c, cushion):
                 c.setDash(1, 2)
                 c.line(xo, yo + vs + 10, xo + tie_offset, yo + vs + 10)
                 c.line(xo + hs, yo + vs + 10, xo + hs - tie_offset, yo + vs + 10)
-                if(tie_offset>0)
+                if(tie_offset>0):
                     c.drawString(xo + tie_offset / 2, yo + vs + 20, f"{tie_offset_from_corner}\"")
                     c.drawString(xo + hs - tie_offset / 2, yo + vs + 20, f"{tie_offset_from_corner}\"")
 
@@ -364,7 +364,7 @@ def draw_rectangle(c, cushion):
                 c.setDash(1, 2)
                 c.line(xo, yo + vs + 10, xo + tie_offset, yo + vs + 10)
                 c.line(xo + hs, yo + vs + 10, xo + hs - tie_offset, yo + vs + 10)
-                if(tie_offset>0)
+                if(tie_offset>0):
                     c.drawString(xo + tie_offset / 2, yo + vs + 20, f"{tie_offset_from_corner}\"")
                     c.drawString(xo + hs - tie_offset / 2, yo + vs + 20, f"{tie_offset_from_corner}\"")
             else:
@@ -374,7 +374,7 @@ def draw_rectangle(c, cushion):
                 c.setDash(1, 2)
                 c.line(xo - 10, yo, xo - 10, yo + tie_offset)
                 c.line(xo - 10, yo + vs, xo - 10, yo + vs - tie_offset)
-                if(tie_offset>0)
+                if(tie_offset>0):
                     c.drawString(xo - 30, yo + tie_offset / 2, f"{tie_offset_from_corner}\"")
                     c.drawString(xo - 30, yo + vs - tie_offset / 2, f"{tie_offset_from_corner}\"")
 
