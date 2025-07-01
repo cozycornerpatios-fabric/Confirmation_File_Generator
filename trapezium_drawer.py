@@ -72,6 +72,8 @@ from reportlab.lib.colors import black, red, purple, green
 
 # === DRAW PAGES FOR EACH CUSHION ===
 def draw_trapezium(c,cushion):
+    page_width, page_height = letter
+    
     cushion_name = cushion.get('cushion_name', 'Cushion Specifications')
     top_base_in = cushion['top_base']
     bottom_base_in = cushion['bottom_base']
@@ -123,7 +125,7 @@ def draw_trapezium(c,cushion):
         y -= 0.3 * inch
 
     # Define printable area (letter page = 8.5 x 11 inches)
-    page_width, page_height = letter
+    # page_width, page_height = letter
     margin = 0.75 * inch
     usable_width = page_width - 2 * margin
     usable_height = page_height - 2 * margin
