@@ -56,12 +56,14 @@ def generate_confirmation():
 
         for cushion in cushions:
             cushion_name = cushion.get("cushion_name", "").lower()
-            if "trapezoid" in cushion_name:
+            is_trapezoid_name = "trapezoid" in cushion_name
+            has_trapezoid_dims = all(k in cushion for k in ("top_base", "bottom_base", "height"))
+
+            if is_trapezoid_name or has_trapezoid_dims:
                 draw_trapezium(c, cushion)
             else:
                 draw_rectangle(c, cushion)
 
-            c.showPage() 
 
         c.save()
         return jsonify({"pdf_link": url_for('serve_pdf', filename=filename, _external=True)})
