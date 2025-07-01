@@ -55,14 +55,7 @@ def generate_confirmation():
         c.showPage()
 
         for cushion in cushions:
-            cushion_name = cushion.get("cushion_name", "").lower()
-            is_trapezoid_shape = "trapezoid" in cushion_name
-        
-            if is_trapezoid_shape:
-                # Validate that trapezoid-specific dimensions are strictly positive
-                if any(cushion.get(k, 0) <= 0 for k in ("top_base", "bottom_base", "height")):
-                    return jsonify({"error": f"Trapezoid cushion '{cushion_name}' has invalid dimensions (must be > 0)"}), 400
-
+            if all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
                 draw_trapezium(c, cushion)
             else:
                 draw_rectangle(c, cushion)
