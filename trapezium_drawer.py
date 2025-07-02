@@ -277,6 +277,10 @@ def draw_trapezium(c,cushion):
             (bottom_right[0], bottom_right[1], bottom_left[0], bottom_left[1]),
             (bottom_left[0], bottom_left[1], top_left[0], top_left[1])
         ])
+        c.setFillColor(purple)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawCentredString(top_right[0] + 30, top_right[1] - 5, "Piping")
+
 
     c.setStrokeColor(black)
     c.setLineWidth(1)
@@ -287,6 +291,7 @@ def draw_trapezium(c,cushion):
         (i_bl[0], i_bl[1], i_tl[0], i_tl[1])
     ])
 
+
     # Draw zipper (unchanged logic)
     c.setStrokeColor(red)
     c.setLineWidth(1.5)
@@ -295,7 +300,7 @@ def draw_trapezium(c,cushion):
     dynamic_offset = min(bottom_base, height) * 0.03
     if zipper_position == "Short Side":
         c.line(top_left[0], top_left[1] + dynamic_offset, top_right[0], top_right[1] + dynamic_offset)
-        c.drawCentredString((top_left[0] + top_right[0]) / 2, top_left[1] + dynamic_offset, "Zipper")
+        c.drawCentredString((top_left[0] + top_right[0]) / 2, top_left[1] + dynamic_offset + 5, "Zipper")
     elif zipper_position == "Long Side":
         c.line(bottom_left[0], bottom_left[1] - dynamic_offset, bottom_right[0], bottom_right[1] - dynamic_offset)
         c.drawCentredString((bottom_left[0] + bottom_right[0]) / 2, bottom_left[1] - dynamic_offset - 11, "Zipper")
@@ -340,4 +345,3 @@ def draw_trapezium(c,cushion):
     )
 
     c.showPage()
-
