@@ -25,25 +25,24 @@ def draw_rectangle(c, cushion):
     short_side_length = min(length_in, width_in)
     long_side_length = max(length_in, width_in)
 
-    if 'tie_offset_from_corner' in cushion:
-        tie_offset_from_corner = cushion['tie_offset_from_corner']
-        if not isinstance(tie_offset_from_corner, (int, float)) or tie_offset_from_corner < 0:
-            # return jsonify({"error": f"Invalid tie_offset_from_corner: must be a non-negative number."}), 400
-            print(f"Error: Invalid tie_offset_from_corner: must be a non-negative number.")
-            return
-        if tie_offset_from_corner >= short_side_length / 2:
-            # return jsonify({"error": f"tie_offset_from_corner too large: must be less than half of the short side length ({short_side_length / 2} inches)."}), 400
-            print(f"Error: tie_offset_from_corner too large: must be less than half of the short side length ({short_side_length / 2} inches).")
-            return
+    
+    tie_offset_from_corner = cushion['tie_offset_from_corner']
+    # if not isinstance(tie_offset_from_corner, (int, float)) or tie_offset_from_corner < 0:
+    #     # return jsonify({"error": f"Invalid tie_offset_from_corner: must be a non-negative number."}), 400
+    #     print(f"Error: Invalid tie_offset_from_corner: must be a non-negative number.")
+    #     return
+    # if tie_offset_from_corner >= short_side_length / 2:
+    #     # return jsonify({"error": f"tie_offset_from_corner too large: must be less than half of the short side length ({short_side_length / 2} inches)."}), 400
+    #     print(f"Error: tie_offset_from_corner too large: must be less than half of the short side length ({short_side_length / 2} inches).")
+    #     return
+    if ties in ["2 Side", "2 Side Short"]:
+        tie_offset_from_corner = max(tie_offset_from_corner,short_side_length / 2)
+    elif ties == "2 Side Long":
+        tie_offset_from_corner = max(long_side_length / 2,tie_offset_from_corner)
+    elif ties in ["2 Same Side Long", "2 Same Side Short"]:
+        tie_offset_from_corner = max(0,tie_offset_from_corner) # 20% or 4 inches max
     else:
-        if ties in ["2 Side", "2 Side Short"]:
-            tie_offset_from_corner = short_side_length / 2
-        elif ties == "2 Side Long":
-            tie_offset_from_corner = long_side_length / 2
-        elif ties in ["2 Same Side Long", "2 Same Side Short"]:
-            tie_offset_from_corner = 0  # 20% or 4 inches max
-        else:
-            tie_offset_from_corner = 4  # fallback default
+        tie_offset_from_corner = max(4,tie_offset_from_corner) # fallback default
 
 
 
