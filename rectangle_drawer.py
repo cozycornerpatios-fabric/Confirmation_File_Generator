@@ -23,6 +23,7 @@ def draw_rectangle(c, cushion):
     quantity = cushion.get('quantity', 1)
     tie_offset_from_corner = cushion.get('tie_offset_from_corner', 4)  # default to 4 inches
     short_side_length = min(length_in, width_in)
+    long_side_length = max(length_in, width_in)
 
     if 'tie_offset_from_corner' in cushion:
         tie_offset_from_corner = cushion['tie_offset_from_corner']
@@ -35,9 +36,11 @@ def draw_rectangle(c, cushion):
             print(f"Error: tie_offset_from_corner too large: must be less than half of the short side length ({short_side_length / 2} inches).")
             return
     else:
-        if ties in ["2 Side", "2 Side Short", "2 Side Long"]:
+        if ties in ["2 Side", "2 Side Short"]:
             tie_offset_from_corner = short_side_length / 2
-        elif ties.startswith("4 Side")  or ties in ["2 Same Side Long", "2 Same Side Short"]:
+        elif ties == "2 Side Long":
+            tie_offset_from_corner = long_side_length / 2
+        elif ties in ["2 Same Side Long", "2 Same Side Short"]:
             tie_offset_from_corner = 0  # 20% or 4 inches max
         else:
             tie_offset_from_corner = 4  # fallback default
