@@ -1,136 +1,366 @@
-from flask import Flask, request, jsonify, send_from_directory, url_for
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
-from reportlab.lib.colors import red, black
-import os
+from reportlab.lib.colors import red, black, blue, green
+from google.colab import files
 import uuid
-import sys
+import math
 
-app = Flask(__name__)
-PDF_DIR = os.path.join(os.getcwd(), "pdfs")
-os.makedirs(PDF_DIR, exist_ok=True)
+def generate_trapezoid_diagram(cushion):
+    cushion_name = cushion.get('cushion_name', 'Cushion Specifications')
+    bottom_width = cushion["bottom_width"]
+    top_width = cushion["top_width"]
+    height_in = cushion["height"]
+    if(top_width > bottom_width):
+        top_width, bottom_width = bottom_width, top_width
 
-@app.route('/generate-clipped-trapezium', methods=['GET', 'POST'])
-def generate_clipped_trapezium():
-    try:
-        print("HEADERS:", dict(request.headers), file=sys.stderr)
+    edge = cushion.get("edge", 4)
+    thickness = cushion["thickness"]
+    fill = cushion.get("fill", "Foam")
+    fabric = cushion.get("fabric", "Canvas")
+    zipper_position = cushion["zipper"]
+    piping = cushion["piping"]
+    ties = cushion["ties"]
+    quantity = cushion.get('quantity', 1)
 
-        data = request.get_json(force=True) if request.method == 'POST' else request.args.to_dict()
-        for key in data:
-            if isinstance(data[key], str):
-                data[key] = data[key].strip()
 
-        required_fields = ['bottom_width', 'top_width', 'height_in', 'edge', 'fill', 'fabric', 'zipper', 'piping', 'ties']
-        missing = [field for field in required_fields if field not in data]
-        if missing:
-            return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
+    # Derived values
+    offset = (bottom_width - top_width) / 2
+    # max_draw_height = 4.25 * inch
+    # max_draw_width = 3.5 * inch
+    # scale = min(max_draw_width / bottom_width, max_draw_height / height_in)
 
-        bottom_width = float(data['bottom_width'])
-        top_width = float(data['top_width'])
-        height_in = float(data['height_in'])
-        edge = float(data['edge'])
-        fill = data['fill']
-        fabric = data['fabric']
-        zipper = data['zipper']
-        piping = data['piping']
-        ties = data['ties']
+    # b = bottom_width * scale
+    # t = top_width * scale
+    # h = height_in * scale
+    # e = edge * scale
+    # o = offset * scale
 
-        offset = (bottom_width - top_width) / 2
-        max_draw_height = 4.25 * inch
-        max_draw_width = 3.5 * inch
-        scale_factor = min(max_draw_width / bottom_width, max_draw_height / height_in)
+    # verts = [
+    #     (0, 0),
+    #     (b, 0),
+    #     (b, e),
+    #     (o + t, h),
+    #     (o, h),
+    #     (0, e)
+    # ]
 
-        b = bottom_width * scale_factor
-        t = top_width * scale_factor
-        h = height_in * scale_factor
-        e = edge * scale_factor
-        o = offset * scale_factor
+    filename = f"confirmation_{uuid.uuid4().hex}.pdf"
+    c = canvas.Canvas(filename, pagesize=letter)
+    width, height = letter
 
-        verts = [
-            (0, 0),
-            (b, 0),
-            (b, e),
-            (o + t, h),
-            (o, h),
-            (0, e)
+    # Title and specs
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(1 * inch, height - 1 * inch, "CONFIRMATION - CLIPPED TRAPEZOID")
+
+    specs = [
+        f"Bottom Width: {bottom_width} in",
+        f"Top Width: {top_width} in",
+        f"Height: {height_in} in",
+        f"Clipping Edge: {edge} in",
+        f"Thickness: {thickness} in",
+        f"Fill: {fill}",
+        f"Fabric: {fabric}",
+        f"Zipper:  {zipper_position}",
+        f"Piping: {piping}",
+        f"Ties: {ties}",
+      
+    ]
+
+    y = height - 1.5 * inch
+    for s in specs:
+        c.setFont("Helvetica", 10)
+        c.drawString(1 * inch, y, s)
+        y -= 0.3 * inch
+
+    # # Origin shift
+    # x0 = (width - b) / 2
+    # y0 = (height - h) / 2
+    
+    # Define printable area
+    # margin = 0.75 * inch
+    # usable_width = width - 2 * margin
+    # usable_height = height - 4 * inch  
+    # leave room for specs text
+    # Scale diagram to fit within usable area (with some padding)
+    padding_x = 1.0 * inch  # horizontal padding
+    padding_y = 1.5 * inch  # vertical padding to account for labels
+    usable_width = width - 2 * padding_x
+    usable_height = height - 2 * padding_y
+    # Scale diagram to fit
+    max_cushion_width = bottom_width
+    max_cushion_height = height_in
+    scale_x = usable_width / max_cushion_width
+    scale_y = usable_height / max_cushion_height
+    scale = min(scale_x, scale_y)
+    
+    # Apply scale
+    b = bottom_width * scale
+    t = top_width * scale
+    h = height_in * scale
+    e = edge * scale
+    o = (bottom_width - top_width) / 2 * scale
+        # Update verts
+    verts = [
+        (0, 0),
+        (b, 0),
+        (b, e),
+        (o + t, h),
+        (o, h),
+        (0, e)
+    ]
+
+
+    
+    # Centering
+    x0 = (width - b) / 2
+    y0 = (height - y) / 2
+
+    # Main black shape
+    c.setStrokeColor(black)
+    c.setLineWidth(1)
+    main_path = c.beginPath()
+    main_path.moveTo(x0 + verts[0][0], y0 + verts[0][1])
+    for x, y_ in verts[1:]:
+        main_path.lineTo(x0 + x, y0 + y_)
+    main_path.close()
+    c.drawPath(main_path)
+
+    # Add thickness text to the left of the diagram
+    c.setFont("Helvetica", 8)
+    c.drawString(x0 - 1 * inch, y0 + h / 2, f"Thickness = {thickness} in")
+
+    tie_anchor_pts = [(x0 + x, y0 + y) for x, y in verts]
+
+    # Draw piping if requested
+    if piping.lower() == "yes":
+        def unit_normal(p1, p2):
+            dx = p2[0] - p1[0]
+            dy = p2[1] - p1[1]
+            length = math.hypot(dx, dy)
+            return (-dy / length, dx / length)
+
+        normals = []
+        n = len(tie_anchor_pts)
+        for i in range(n):
+            p_prev = tie_anchor_pts[i - 1]
+            p_curr = tie_anchor_pts[i]
+            p_next = tie_anchor_pts[(i + 1) % n]
+            n1 = unit_normal(p_prev, p_curr)
+            n2 = unit_normal(p_curr, p_next)
+            avg_nx = (n1[0] + n2[0]) / 2
+            avg_ny = (n1[1] + n2[1]) / 2
+            length = math.hypot(avg_nx, avg_ny)
+            normals.append((avg_nx / length, avg_ny / length))
+
+        offset_amt = 5
+        piping_path = c.beginPath()
+        for i, (x, y) in enumerate(tie_anchor_pts):
+            nx, ny = normals[i]
+            offset_x = x + offset_amt * nx
+            offset_y = y + offset_amt * ny
+            if i == 0:
+                piping_path.moveTo(offset_x, offset_y)
+            else:
+                piping_path.lineTo(offset_x, offset_y)
+        piping_path.close()
+
+        c.setStrokeColor(blue)
+        c.setLineWidth(0.5)
+        c.drawPath(piping_path, stroke=1, fill=0)
+
+        c.setFont("Helvetica", 7)
+        c.setFillColor(black)
+        top_x = x0 + o + t / 2
+        top_y = y0 + h
+        c.line(top_x, top_y, top_x + 40, top_y + 10)
+        c.drawString(top_x + 42, top_y + 10, "Piping")
+
+    # Draw center height dotted line
+    c.setDash(1, 2)
+    mid_x = x0 + o + t / 2
+    c.line(mid_x, y0, mid_x, y0 + h)
+    c.setDash()
+
+    # Dimension labels
+    c.setFont("Helvetica", 8)
+    angled_len = round(((edge ** 2 + ((bottom_width - top_width) / 2) ** 2) ** 0.5), 2)
+    c.drawString(x0 + b / 2 - 14, y0 + 4, f"{bottom_width} in")
+    c.drawString(x0 + o + t / 2 - 14, y0 + h - 9, f"{top_width} in")
+    c.drawString(x0 + o/2 + o/3, y0 + e + (h - e) / 2, f"{angled_len} in")
+    c.drawString(x0 + b - o, y0 + e + (h - e) / 2, f"{angled_len} in")
+    c.drawString(mid_x + 5, y0 + h / 2, f"{height_in} in")
+    c.drawString(x0 + 10, y0 + e/2, f"{edge} in")
+    c.drawString(x0 + b - 18, y0 + e/2, f"{edge} in")
+
+    # Ties logic
+    tie_map = {}
+
+    if "2 back" in ties.lower():
+        mid_x_tie = (tie_anchor_pts[2][0] + tie_anchor_pts[3][0]) / 2
+        mid_y_tie = (tie_anchor_pts[2][1] + tie_anchor_pts[3][1]) / 2
+
+        offset_x = 0.8 * inch
+        offset_y = 1.0 * inch
+        tie_map["2 back"] = [
+            (mid_x_tie - offset_x, mid_y_tie + offset_y- 72),
+            (mid_x_tie + offset_x, mid_y_tie + offset_y - 72)
         ]
 
-        filename = f"confirmation_{uuid.uuid4().hex}.pdf"
-        filepath = os.path.join(PDF_DIR, filename)
-        c = canvas.Canvas(filepath, pagesize=letter)
-        width, height = letter
+    if "2 corner" in ties.lower():
+        tie_map["2 corner"] = [tie_anchor_pts[4], tie_anchor_pts[3]]
 
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(1 * inch, height - 1 * inch, "CONFIRMATION - CLIPPED TRAPEZOID")
+    if "2 side" in ties.lower():
+      # Midpoint of right angled side (between points 2 and 3)
+      mid1_x = (tie_anchor_pts[2][0] + tie_anchor_pts[3][0]) / 2
+      mid1_y = (tie_anchor_pts[2][1] + tie_anchor_pts[3][1]) / 2
 
-        specs = [
-            "Shape: Clipped Trapezoid",
-            f"Bottom Width: {bottom_width} inches",
-            f"Top Width: {top_width} inches",
-            f"Height: {height_in} inches",
-            f"Clipping Edge: {edge} inches",
-            f"Fill: {fill}",
-            f"Fabric: {fabric}",
-            f"Zipper: {zipper}",
-            f"Piping: {piping}",
-            f"Ties: {ties}"
-        ]
+      # Midpoint of left angled side (between points 5 and 4)
+      mid2_x = (tie_anchor_pts[5][0] + tie_anchor_pts[4][0]) / 2
+      mid2_y = (tie_anchor_pts[5][1] + tie_anchor_pts[4][1]) / 2
 
-        y = height - 1.5 * inch
-        for line in specs:
-            c.drawString(1 * inch, y, line)
-            y -= 0.3 * inch
+      tie_map["2 side"] = [
+          (mid1_x, mid1_y),
+          (mid2_x, mid2_y)
+      ]
 
-        x_origin = 4.5 * inch
-        y_origin = height - 6.5 * inch
-        c.setStrokeColor(black)
-        c.setLineWidth(1)
-        path = c.beginPath()
-        path.moveTo(x_origin + verts[0][0], y_origin + verts[0][1])
-        for x, y_ in verts[1:]:
-            path.lineTo(x_origin + x, y_origin + y_)
-        path.close()
-        c.drawPath(path)
 
-        # Dimension labels
-        angled_length = round(((edge**2 + ((bottom_width - top_width) / 2)**2)**0.5), 2)
-        c.setFont("Helvetica", 8)
-        c.drawString(x_origin + b / 2 - 14, y_origin + 4, f"{bottom_width}")
-        c.drawString(x_origin + o + t / 2 - 14, y_origin + h - 9, f"{top_width}")
-        c.drawString(x_origin - 10, y_origin + e + (h - e) / 2, f"{angled_length}")
-        c.drawString(x_origin + b - 10, y_origin + e + (h - e) / 2, f"{angled_length}")
+    if "4 corner" in ties.lower():
+        tie_map["4 corner"] = [tie_anchor_pts[0], tie_anchor_pts[1], tie_anchor_pts[4], tie_anchor_pts[3]]
 
-        # Height dotted line
-        c.setDash(1, 2)
-        center_x = x_origin + o + t / 2
-        c.line(center_x, y_origin, center_x, y_origin + h)
-        c.setDash()
-        c.drawString(center_x + 5, y_origin + h / 2, f"{height_in}")
+    def draw_down_v_fork(x, y):
+        dx = 0.2 * inch
+        dy = 0.2 * inch
+        c.line(x, y, x - dx, y - dy)
+        c.line(x, y, x + dx, y - dy)
 
-        # Zipper path
+    def draw_tie_fork(x, y, up=True):
+        dx = 0.2 * inch
+        dy = 0.2 * inch
+        sign = 1 if up else -1
+        c.line(x, y, x - dx, y + sign * dy)
+        c.line(x, y, x + dx, y + sign * dy)
+
+    def draw_left(x, y):
+        dx = 0.4 * inch
+        dy = 0.4 * inch
+        c.line(x, y, x - dx, y + dy)
+        c.line(x, y, x - dx, y - dy + 5)
+
+    def draw_right(x, y):
+        dx = 0.4 * inch
+        dy = 0.4 * inch
+        c.line(x, y, x + dx, y + dy)
+        c.line(x, y, x + dx, y - dy + 5)
+
+
+
+    c.setStrokeColor(green)
+    c.setFont("Helvetica", 6)
+    l = 0
+    def draw_tie_and_label(x, y, direction):
+        dx = 0.2 * inch
+        dy = 0.2 * inch
+        c.setStrokeColor(green)
+        c.setFillColor(green)
+        c.setFont("Helvetica", 6)
+
+        if direction == "down":
+            c.line(x, y, x - dx, y - dy)
+            c.line(x, y, x + dx, y - dy)
+            c.drawString(x - 10, y - dy - 10, "Ties")
+
+        elif direction == "up":
+            c.line(x, y, x - dx, y + dy)
+            c.line(x, y, x + dx, y + dy)
+            c.drawString(x - 10, y + dy + 2, "Ties")
+
+        elif direction == "left":
+            c.line(x, y, x - dx, y )
+            c.line(x, y, x - dx, y + dy)
+            c.drawString(x - dx - 20, y - 3, "Ties")
+
+        elif direction == "right":
+            c.line(x, y, x + dx, y +dy)
+            c.line(x, y, x + dx, y )
+            c.drawString(x + dx + 2, y - 3, "Ties")
+    
+    for key, points in tie_map.items():
+        for x, y in points:
+            if key == "2 back":
+                draw_down_v_fork(x, y)
+                draw_tie_and_label(x, y, "down")
+
+           
+            elif key == "2 side":
+                diagram_mid_x = x0 + b / 2
+                if x < diagram_mid_x:
+                    draw_tie_and_label(x, y, "left")
+                else:
+                    draw_tie_and_label(x, y, "right")
+
+
+            elif key == "2 corner":
+                draw_tie_and_label(x, y, "down")
+
+            elif key == "4 corner":
+                if (x, y) == tie_anchor_pts[0] or (x, y) == tie_anchor_pts[1]:
+                    draw_tie_and_label(x, y, "down")
+                elif (x, y) == tie_anchor_pts[3] or (x, y) == tie_anchor_pts[4]:
+                    draw_tie_and_label(x, y, "up")
+        # Zipper mark
+    if zipper_position != "None":
+
         c.setStrokeColor(red)
         c.setLineWidth(2)
         c.setFillColor(red)
-        x1, y1 = verts[0][0], verts[0][1] - 0.1 * inch
-        x2, y2 = verts[1][0], verts[1][1] - 0.1 * inch
-        c.line(x_origin + x1, y_origin + y1, x_origin + x2, y_origin + y2)
-        c.drawString(x_origin + (x1 + x2) / 2, y_origin + y1 - 0.1 * inch, "Zipper")
+        offset_zipper = 0.1 * inch
+        if zipper_position == "long side":
+            z1 = verts[0][0], verts[0][1] - offset_zipper
+            z2 = verts[1][0], verts[1][1] - offset_zipper
+            c.line(x0 + z1[0], y0 + z1[1], x0 + z2[0], y0 + z2[1])
+            c.drawString(x0 + (z1[0] + z2[0]) / 2 - 50 , y0 + (z1[1] + z2[1]) / 2 - 10  - offset_zipper, "Zipper")
+        elif zipper_position == "short side":
+            z1 = verts[4][0], verts[4][1] + offset_zipper
+            z2 = verts[3][0], verts[3][1] + offset_zipper
+            c.line(x0 + z1[0], y0 + z1[1], x0 + z2[0], y0 + z2[1])
+            c.drawString(x0 + (z1[0] + z2[0]) / 2 - 50 , y0 + (z1[1] + z2[1]) / 2 + 20  - offset_zipper, "Zipper")
+        elif zipper_position == "angle side":
+            z1 = verts[0][0] - offset_zipper, verts[0][1]
+            z2 = verts[5][0] - offset_zipper, verts[5][1]
+            c.line(x0 + z1[0], y0 + z1[1], x0 + z2[0], y0 + z2[1])
+            # c.drawString(x0 + (z1[0] + z2[0]) / 2 - 50 , y0 + (z1[1] + z2[1]) / 2 - 10  - offset_zipper, "Zipper")
+            dx=verts[4][0] - verts[5][0]
+            dy=verts[4][1] - verts[5][1]
+            length = math.hypot(dx, dy)
+            nx = -dy / length
+            ny = dx / length
+            z1 = verts[5][0] + offset_zipper * nx,verts[5][1] + offset_zipper * ny
+            z2 = verts[4][0] + offset_zipper * nx,verts[4][1] + offset_zipper * ny
+            c.line(x0 + z1[0], y0 + z1[1], x0 + z2[0], y0 + z2[1])
+            c.drawString(x0 + (z1[0] + z2[0]) / 2 - 50 , y0 + (z1[1] + z2[1]) / 2 - 10  - offset_zipper, "Zipper")
+        elif zipper_position == "TopPlusAngled":
+            z1 = verts[4][0], verts[4][1] + offset_zipper
+            z2 = verts[3][0], verts[3][1] + offset_zipper
+            c.line(x0 + z1[0], y0 + z1[1], x0 + z2[0], y0 + z2[1])
+            c.drawString(x0 + (z1[0] + z2[0]) / 2 - 50 , y0 + (z1[1] + z2[1]) / 2 + 20  - offset_zipper, "Zipper")
+            dx=verts[4][0] - verts[5][0]
+            dy=verts[4][1] - verts[5][1]
+            length = math.hypot(dx, dy)
+            nx = -dy / length
+            ny = dx / length
+            z1 = verts[5][0] + offset_zipper * nx,verts[5][1] + offset_zipper * ny
+            z2 = verts[4][0] + offset_zipper * nx,verts[4][1] + offset_zipper * ny
+            c.line(x0 + z1[0], y0 + z1[1], x0 + z2[0], y0 + z2[1])
+            z1 = verts[2][0] - offset_zipper * nx,verts[2][1] + offset_zipper * ny
+            z2 = verts[3][0] - offset_zipper * nx,verts[3][1] + offset_zipper * ny
+            c.line(x0 + z1[0], y0 + z1[1], x0 + z2[0], y0 + z2[1])
 
-        c.save()
 
-        return jsonify({
-            "pdf_link": url_for('serve_pdf', filename=filename, _external=True)
-        })
+        else:
+            z1 = verts[0][0], verts[0][1] - offset_zipper
+            z2 = verts[1][0], verts[1][1] - offset_zipper
 
-    except Exception as e:
-        print("ERROR:", e, file=sys.stderr)
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/pdfs/<filename>')
-def serve_pdf(filename):
-    return send_from_directory(PDF_DIR, filename)
-
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10001))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    # Save and download
+    c.save()
+    return filename
