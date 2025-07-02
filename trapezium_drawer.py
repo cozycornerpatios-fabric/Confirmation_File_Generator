@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import black, red, purple, green
-# from google.colab import files
+from google.colab import files
 
 
 
@@ -73,7 +73,6 @@ from reportlab.lib.colors import black, red, purple, green
 # === DRAW PAGES FOR EACH CUSHION ===
 def draw_trapezium(c,cushion):
     page_width, page_height = letter
-    
     cushion_name = cushion.get('cushion_name', 'Cushion Specifications')
     top_base_in = cushion['top_base']
     bottom_base_in = cushion['bottom_base']
@@ -92,7 +91,7 @@ def draw_trapezium(c,cushion):
     # c.setFont("Helvetica", 12)
     # y = 715
     # for line in product_details:
-    #     c.drawString(100, y, line)
+    #  ,   c.drawString(100, y, line)
     #     y -= 18
     left_x = 1 * inch
     y = page_height - 1 * inch
@@ -125,18 +124,27 @@ def draw_trapezium(c,cushion):
         y -= 0.3 * inch
 
     # Define printable area (letter page = 8.5 x 11 inches)
-    # page_width, page_height = letter
+    
     margin = 0.75 * inch
     usable_width = page_width - 2 * margin
     usable_height = page_height - 2 * margin
 
-    # Compute actual physical dimensions
+   # === NEW DIAGRAM SCALING AND POSITIONING ===
+
+    margin = 0.75 * inch
+    usable_width = page_width - 2 * margin
+
+    # The y position where the text ends is already tracked in `y`
+    # The remaining vertical space is from margin (bottom) to y
+    diagram_usable_height = y - margin
+
+    # Compute physical dimensions
     max_physical_width = max(top_base_in, bottom_base_in)
     max_physical_height = height_in
 
-    # Scale to fit usable area
+    # Compute scale to fit both width and height
     scale_x = usable_width / max_physical_width
-    scale_y = usable_height / max_physical_height
+    scale_y = diagram_usable_height / max_physical_height
     scale = min(scale_x, scale_y)
 
     # Recalculate dimensions
@@ -144,16 +152,14 @@ def draw_trapezium(c,cushion):
     bottom_base = bottom_base_in * scale
     height = height_in * scale
 
-    # Center the shape on the page
+    # Center horizontally
     x_origin = (page_width - bottom_base) / 2
-    y_origin = (page_height - height) / 2
 
-    top_base = top_base_in * scale
-    bottom_base = bottom_base_in * scale
-    height = height_in * scale
+    # Diagram starts at bottom margin
+    y_origin = margin
 
-    x_origin = (page_width - bottom_base) / 2
-    y_origin = (page_height - height) / 2
+
+    
 
     top_left = (x_origin + (bottom_base - top_base) / 2, y_origin + height)
     top_right = (top_left[0] + top_base, top_left[1])
