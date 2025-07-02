@@ -232,17 +232,17 @@ def draw_trapezium(c,cushion):
 
     def draw_ties(opt):
         if opt == "2 Side Ties":
-            tie_offset = max(tie_offset,height_in/2)
+            tie_offset_s = max(tie_offset,height_in/2)
             dx_left = tie_top_left[0] - tie_bottom_left[0]
             dy_left = tie_top_left[1] - tie_bottom_left[1]
-            ratio_left = min(1, tie_offset / slant_len_in)
+            ratio_left = min(1, tie_offset_s / slant_len_in)
             x_left = tie_bottom_left[0] + dx_left * ratio_left
             y_left = tie_bottom_left[1] + dy_left * ratio_left
             draw_tie(x_left, y_left, "left")
 
             dx_right = tie_top_right[0] - tie_bottom_right[0]
             dy_right = tie_top_right[1] - tie_bottom_right[1]
-            ratio_right = min(1, tie_offset / slant_len_in)
+            ratio_right = min(1, tie_offset_s / slant_len_in)
             x_right = tie_bottom_right[0] + dx_right * ratio_right
             y_right = tie_bottom_right[1] + dy_right * ratio_right
             draw_tie(x_right, y_right, "right")
@@ -258,9 +258,9 @@ def draw_trapezium(c,cushion):
             draw_tie(tie_bottom_right[0], tie_bottom_right[1], "down")
 
         elif opt == "2 Back Ties":
-            tie_offset = max(tie_offset,0.25*bottom_base_in)
-            left_x = tie_bottom_left[0] + (tie_bottom_right[0] - tie_bottom_left[0]) * (tie_offset / bottom_base_in)
-            right_x = tie_bottom_right[0] - (tie_bottom_right[0] - tie_bottom_left[0]) * (tie_offset / bottom_base_in)
+            tie_offset_b = max(tie_offset,0.25*bottom_base_in)
+            left_x = tie_bottom_left[0] + (tie_bottom_right[0] - tie_bottom_left[0]) * (tie_offset_b / bottom_base_in)
+            right_x = tie_bottom_right[0] - (tie_bottom_right[0] - tie_bottom_left[0]) * (tie_offset_b / bottom_base_in)
             y = tie_bottom_left[1]
             draw_tie(left_x, y, "down")
             draw_tie(right_x, y, "down")
