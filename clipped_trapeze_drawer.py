@@ -223,8 +223,13 @@ def draw_clipped_trapeze(c,cushion):
     ]
 
 
-    if "2 corner" in ties.lower():
-        tie_map["2 corner"] = [tie_anchor_pts[4], tie_anchor_pts[3]]
+    if "2 corner" in ties.lower() and "bottom" not in ties.lower():
+      # Default 2 corner ties at top corners
+      tie_map["2 corner"] = [tie_anchor_pts[4], tie_anchor_pts[3]]
+
+    if "2 corner bottom" in ties.lower():
+        # New: 2 corner bottom ties at bottom corners
+        tie_map["2 corner bottom"] = [tie_anchor_pts[0], tie_anchor_pts[1]]
 
     if "2 side" in ties.lower():
         # Midpoint of right angled side (between points 2 and 3)
@@ -318,6 +323,8 @@ def draw_clipped_trapeze(c,cushion):
 
             elif key == "2 corner":
                 draw_tie_and_label(x, y, "up")
+            elif key == "2 corner bottom":
+                draw_tie_and_label(x, y, "down")     
 
             elif key == "4 corner":
                 if (x, y) == tie_anchor_pts[0] or (x, y) == tie_anchor_pts[1]:
