@@ -56,12 +56,16 @@ def generate_confirmation():
         c.showPage()
 
         for cushion in cushions:
-            if all(cushion.get(k,0) > 0 for k in ("length","top_width","bottom_width","ear","height")):
-                draw_l_shape(c,cushion)
-            if all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
-                draw_trapezium(c, cushion)
-            else:
-                draw_rectangle(c, cushion)
+            for cushion in cushions:
+                if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "height")):
+                    draw_l_shape(c, cushion)
+                elif all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
+                    draw_trapezium(c, cushion)
+                elif all(cushion.get(k, 0) > 0 for k in ("width", "length", "thickness")):
+                    draw_rectangle(c, cushion)
+                else:
+                    raise ValueError("Unable to determine cushion shape. Missing key dimensions.")
+
 
 
 
