@@ -2,7 +2,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import red, black, blue, green
-from google.colab import files
 import uuid
 import math
 
@@ -64,7 +63,7 @@ def generate_trapezoid_diagram(cushion):
         f"Zipper:  {zipper_position}",
         f"Piping: {piping}",
         f"Ties: {ties}",
-      
+
     ]
 
     y = height - 1.5 * inch
@@ -76,31 +75,54 @@ def generate_trapezoid_diagram(cushion):
     # # Origin shift
     # x0 = (width - b) / 2
     # y0 = (height - h) / 2
-    
+
     # Define printable area
     # margin = 0.75 * inch
     # usable_width = width - 2 * margin
-    # usable_height = height - 4 * inch  
+    # usable_height = height - 4 * inch
     # leave room for specs text
     # Scale diagram to fit within usable area (with some padding)
-    padding_x = 1.0 * inch  # horizontal padding
-    padding_y = 1.5 * inch  # vertical padding to account for labels
+    # padding_x = 1.0 * inch  # horizontal padding
+    # padding_y = 1.5 * inch  # vertical padding to account for labels
+    # usable_width = width - 2 * padding_x
+    # usable_height = height - 2 * padding_y
+    # # Scale diagram to fit
+    # max_cushion_width = bottom_width
+    # max_cushion_height = height_in
+    # scale_x = usable_width / max_cushion_width
+    # scale_y = usable_height / max_cushion_height
+    # scale = min(scale_x, scale_y)
+
+    # # Apply scale
+    # b = bottom_width * scale
+    # t = top_width * scale
+    # h = height_in * scale
+    # e = edge * scale
+    # o = (bottom_width - top_width) / 2 * scale
+    # Compute space below specs
+    padding_x = 1.0 * inch
+    diagram_bottom = 0.5 * inch  # bottom margin
+    diagram_top = y - 0.25 * inch  # just below specs text
+    usable_height = diagram_top - diagram_bottom
     usable_width = width - 2 * padding_x
-    usable_height = height - 2 * padding_y
-    # Scale diagram to fit
-    max_cushion_width = bottom_width
-    max_cushion_height = height_in
-    scale_x = usable_width / max_cushion_width
-    scale_y = usable_height / max_cushion_height
+
+    # Compute scale
+    scale_x = usable_width / bottom_width
+    scale_y = usable_height / height_in
     scale = min(scale_x, scale_y)
-    
+
     # Apply scale
     b = bottom_width * scale
     t = top_width * scale
     h = height_in * scale
     e = edge * scale
     o = (bottom_width - top_width) / 2 * scale
-        # Update verts
+
+    # Position diagram at bottom margin
+    x0 = (width - b) / 2
+    y0 = diagram_bottom
+
+    # Update verts
     verts = [
         (0, 0),
         (b, 0),
@@ -109,12 +131,6 @@ def generate_trapezoid_diagram(cushion):
         (o, h),
         (0, e)
     ]
-
-
-    
-    # Centering
-    x0 = (width - b) / 2
-    y0 = (height - y) / 2
 
     # Main black shape
     c.setStrokeColor(black)
@@ -197,31 +213,32 @@ def generate_trapezoid_diagram(cushion):
     tie_map = {}
 
     if "2 back" in ties.lower():
-        mid_x_tie = (tie_anchor_pts[2][0] + tie_anchor_pts[3][0]) / 2
-        mid_y_tie = (tie_anchor_pts[2][1] + tie_anchor_pts[3][1]) / 2
+        # Place ties along bottom edge, evenly spaced
+        tie1_x = x0 + b / 3
+        tie2_x = x0 + 2 * b / 3
+        tie_y = y0  # at the bottom edge
 
-        offset_x = 0.8 * inch
-        offset_y = 1.0 * inch
         tie_map["2 back"] = [
-            (mid_x_tie - offset_x, mid_y_tie + offset_y- 72),
-            (mid_x_tie + offset_x, mid_y_tie + offset_y - 72)
-        ]
+            (tie1_x, tie_y),
+            (tie2_x, tie_y)
+    ]
+
 
     if "2 corner" in ties.lower():
         tie_map["2 corner"] = [tie_anchor_pts[4], tie_anchor_pts[3]]
 
     if "2 side" in ties.lower():
-      # Midpoint of right angled side (between points 2 and 3)
-      mid1_x = (tie_anchor_pts[2][0] + tie_anchor_pts[3][0]) / 2
-      mid1_y = (tie_anchor_pts[2][1] + tie_anchor_pts[3][1]) / 2
+        # Midpoint of right angled side (between points 2 and 3)
+        mid1_x = (tie_anchor_pts[2][0] + tie_anchor_pts[3][0]) / 2
+        mid1_y = (tie_anchor_pts[2][1] + tie_anchor_pts[3][1]) / 2
 
-      # Midpoint of left angled side (between points 5 and 4)
-      mid2_x = (tie_anchor_pts[5][0] + tie_anchor_pts[4][0]) / 2
-      mid2_y = (tie_anchor_pts[5][1] + tie_anchor_pts[4][1]) / 2
+        # Midpoint of left angled side (between points 5 and 4)
+        mid2_x = (tie_anchor_pts[5][0] + tie_anchor_pts[4][0]) / 2
+        mid2_y = (tie_anchor_pts[5][1] + tie_anchor_pts[4][1]) / 2
 
-      tie_map["2 side"] = [
-          (mid1_x, mid1_y),
-          (mid2_x, mid2_y)
+        tie_map["2 side"] = [
+            (mid1_x, mid1_y),
+            (mid2_x, mid2_y)
       ]
 
 
@@ -284,14 +301,14 @@ def generate_trapezoid_diagram(cushion):
             c.line(x, y, x + dx, y +dy)
             c.line(x, y, x + dx, y )
             c.drawString(x + dx + 2, y - 3, "Ties")
-    
+
     for key, points in tie_map.items():
         for x, y in points:
             if key == "2 back":
                 draw_down_v_fork(x, y)
                 draw_tie_and_label(x, y, "down")
 
-           
+
             elif key == "2 side":
                 diagram_mid_x = x0 + b / 2
                 if x < diagram_mid_x:
@@ -301,14 +318,14 @@ def generate_trapezoid_diagram(cushion):
 
 
             elif key == "2 corner":
-                draw_tie_and_label(x, y, "down")
+                draw_tie_and_label(x, y, "up")
 
             elif key == "4 corner":
                 if (x, y) == tie_anchor_pts[0] or (x, y) == tie_anchor_pts[1]:
                     draw_tie_and_label(x, y, "down")
                 elif (x, y) == tie_anchor_pts[3] or (x, y) == tie_anchor_pts[4]:
                     draw_tie_and_label(x, y, "up")
-        # Zipper mark
+    # Zipper mark
     if zipper_position != "None":
 
         c.setStrokeColor(red)
