@@ -321,9 +321,9 @@ def draw_clipped_trapeze(c,cushion):
                     draw_tie_and_label(x, y, "right")
 
 
-            elif key == "2 corner":
+            elif key == "2 corner top":
                 draw_tie_and_label(x, y, "up")
-            elif key == "2 corner bottom":
+            elif key == "2 corner":
                 draw_tie_and_label(x, y, "down")     
 
             elif key == "4 corner":
