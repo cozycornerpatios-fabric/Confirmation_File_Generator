@@ -5,7 +5,7 @@ from reportlab.lib.colors import red, black, blue, green
 import uuid
 import math
 
-def generate_trapezoid_diagram(cushion):
+def draw_clipped_trapeze(c,cushion): 
     cushion_name = cushion.get('cushion_name', 'Cushion Specifications')
     bottom_width = cushion["bottom_width"]
     top_width = cushion["top_width"]
@@ -45,7 +45,6 @@ def generate_trapezoid_diagram(cushion):
     # ]
 
     filename = f"confirmation_{uuid.uuid4().hex}.pdf"
-    c = canvas.Canvas(filename, pagesize=letter)
     width, height = letter
 
     # Title and specs
@@ -377,7 +376,4 @@ def generate_trapezoid_diagram(cushion):
         else:
             z1 = verts[0][0], verts[0][1] - offset_zipper
             z2 = verts[1][0], verts[1][1] - offset_zipper
-
-    # Save and download
-    c.save()
-    return filename
+    c.showPage()
