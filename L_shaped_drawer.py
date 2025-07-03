@@ -51,6 +51,7 @@ def draw_l_shape(c, cushion):
     main_rect_h = bottom_width * scale
     ear_w = ear * scale
     ear_h = (bottom_width - top_width) * scale
+    main_rect_b = top_width * scale
     piping_margin = 0.1 * inch  # or adjust as needed
 
     # Anchor setup (choose edge depending on piping presence)
@@ -82,10 +83,10 @@ def draw_l_shape(c, cushion):
 
     c.setFont("Helvetica", 10)
     c.setFillColor(black)
-    c.drawCentredString(x + main_rect_w / 2, y + main_rect_h - 20, f"{length}\"")
-    c.drawCentredString(x + 20, y + main_rect_h / 2, f"{bottom_width}\"")
-    c.drawCentredString(x + main_rect_w - 20, y + main_rect_h / 2, f"{top_width}\"")
-    c.drawCentredString(x + main_rect_w / 2, y + ear_h + 10, f"{ear}\"")
+    c.drawCentredString(x + main_rect_w / 2, y + main_rect_h - 10, f"{length}\"")
+    c.drawCentredString(x + 10, y + main_rect_h / 2, f"{bottom_width}\"")
+    c.drawCentredString(x + main_rect_w - 20, y + ear_h + main_rect_b / 2, f"{top_width}\"")
+    c.drawCentredString(x + main_rect_w - ear_w/2, y + ear_h + 5, f"{ear}\"")
 
     if piping.lower() in ["yes", "piping"]:
         c.setStrokeColor(blue)
