@@ -5,6 +5,7 @@ import uuid
 from rectangle_drawer import draw_rectangle
 from trapezium_drawer import draw_trapezium
 from L_shaped_drawer import draw_l_shape
+from clipped_trapeze_drawer import draw_clipped_trapeze
 
 app = Flask(__name__)
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
@@ -59,6 +60,8 @@ def generate_confirmation():
             for cushion in cushions:
                 if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "height")):
                     draw_l_shape(c, cushion)
+                elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "height","edge")):
+                    draw_clipped_trapeze(c,cushion)
                 elif all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
                     draw_trapezium(c, cushion)
                 elif all(cushion.get(k, 0) > 0 for k in ("width", "length", "thickness")):
