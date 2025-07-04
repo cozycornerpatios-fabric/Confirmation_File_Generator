@@ -2,8 +2,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import red, black, green, blue
 from reportlab.pdfgen import canvas
-import json
-import os
+
 
 def draw_t_shape(c, cushion):
     page_width, page_height = letter
