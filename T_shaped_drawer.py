@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 import json
 import os
 
-def draw_t_shape(c, cushion):
+def draw_t_shape(c, cushion,pdf_file):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'T-Shape Cushion')
     length = cushion['length']
@@ -13,12 +13,14 @@ def draw_t_shape(c, cushion):
     bottom_width = cushion['bottom_width']
     ear = cushion['ear']
     height = cushion['height']
+    thickness = cushion['thickness']
     fill = cushion['fill']
     fabric = cushion['fabric']
     zipper_position = cushion['zipper']
     piping = cushion.get('piping', 'No')
     ties = cushion.get('ties','No ties')
     quantity = cushion.get('quantity', 1)
+
 
     c.setFont("Helvetica-Bold", 14)
     y = page_height - inch
@@ -32,6 +34,7 @@ def draw_t_shape(c, cushion):
         ("Bottom Width", f"{bottom_width} inches"),
         ("Ear", f"{ear} inches"),
         ("Height", f"{height} inches"),
+        ("Thickness", f"{thickness} inches"),
         ("Fill", fill),
         ("Fabric", fabric),
         ("Zipper Position", zipper_position),
@@ -88,14 +91,20 @@ def draw_t_shape(c, cushion):
     # Dimension labels
     c.setFont("Helvetica", 10)
     c.setFillColor(black)
-    c.drawCentredString(x + body_w / 2, y  - 20, f"{length}\"")
+    c.drawCentredString(x + body_w / 2,  y - 20, f"{length}\"")
     # Draw length dimension dotted line
     c.setDash(3, 3)  # Set dash pattern: 3 points on, 3 points off
     c.line(x, y - 10, x + body_w, y - 10)
     c.setDash()  # Reset dash to solid
-    c.drawCentredString(x + 15, y + body_h / 2, f"{top_width}\"")
-    c.drawCentredString(x + body_w - 20, y + notch_h/2 + base_h/2, f"{bottom_width}\"")
+    c.drawCentredString(x + 15, y + base_h / 2, f"{top_width}\"")
+    c.drawCentredString(x + body_w - 20, y + notch_h + base_h/2, f"{bottom_width}\"")
     c.drawCentredString(x + notch_w/2 , y + 10, f"{ear}\"")
+
+    # Thickness label
+    c.setFont("Helvetica", 10)
+    c.setFillColor(black)
+    c.drawString(x + body_w + 40, y + body_h/2 - 20, f"Thickness: {thickness}\"")
+
 
     # Piping
     piping_margin = 0.05 * inch
@@ -261,7 +270,7 @@ def draw_t_shape(c, cushion):
         x2 = anchors["corner8"][0]
         y2 = anchors["corner8"][1] - inset
         c.line(x1, y1-inset, x2, y2-inset)
-        c.drawString((x1 + x2)/2 - 10, y1 - 8 - inset, "Zipper")
+        c.drawString((x1 + x2)/2 - 10, y1 - 8, "Zipper")
 
     elif zipper_position == "Length":
         label_gap = 5
@@ -273,7 +282,7 @@ def draw_t_shape(c, cushion):
         y2 = anchors["corner2"][1] + inset
         c.line(x1, y1 + inset, x2, y2 + inset)
         mid_x =(x1 + x2)/ 2
-        mid_y = (y1 + y2) /2 
+        mid_y = (y1 + y2) /2
 
         c.drawString(x1 - inset / 5  + 50 , mid_y + 10, "Zipper")
 
