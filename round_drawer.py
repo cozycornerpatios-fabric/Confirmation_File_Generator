@@ -166,3 +166,41 @@ def draw_round(c, cushion):
     
 
     c.showPage()
+
+
+
+# if __name__ == "__main__":
+#     from reportlab.pdfgen import canvas
+#     from reportlab.lib.pagesizes import letter
+#     from math import pi, cos, sin
+#     import os
+
+#     test_cushion = {
+#         "cushion_name": "Test Cushion - 2 Same Side Long",
+#         # "length": 73,
+#         # "width": 18,
+#         # "height": 3,
+#         # "top_width": 17.5,
+#         # "bottom_width": 37,
+#         # "ear": 17.5,
+#         "fill": "Poly Fiber",
+#         "fabric": "Outdoor Canvas",
+#         "zipper": 1,
+#         "piping": "no",
+#         "ties": "4 Ties Evenly Spaced",  # Try with "2 Same Side Short"
+#         "quantity": 1,
+#         "diameter" : 100,
+#         "thickness" : 10
+#     }
+
+#     pdf_filename = "test_output.pdf"
+#     c = canvas.Canvas(pdf_filename, pagesize=letter)
+#     draw_round(c, test_cushion)
+#     c.save()
+
+#     # Force download link for Colab
+#     try:
+#         from google.colab import files
+#         files.download(pdf_filename)
+#     except ImportError:
+#         print(f"Saved as {pdf_filename}. Not in Colab, manual download required.")
