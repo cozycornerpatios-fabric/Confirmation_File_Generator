@@ -10,12 +10,14 @@ def draw_l_shape(c, cushion):
     bottom_width = cushion['bottom_width']
     ear = cushion['ear']
     height = cushion['height']
+    thickness = cushion.get('thickness', 'N/A') # Added thickness
     fill = cushion['fill']
     fabric = cushion['fabric']
     zipper_position = cushion['zipper']
     piping = cushion.get('piping', 'No')
     ties = cushion.get('ties', 'None')
     quantity = cushion.get('quantity', 1)
+
 
     c.setFont("Helvetica-Bold", 14)
     y = page_height - inch
@@ -29,6 +31,7 @@ def draw_l_shape(c, cushion):
         ("Bottom Width", f"{bottom_width} inches"),
         ("Ear", f"{ear} inches"),
         ("Height", f"{height} inches"),
+        ("Thickness", f"{thickness} inches"), # Added thickness to the specs list
         ("Fill", fill),
         ("Fabric", fabric),
         ("Zipper Position", zipper_position),
@@ -65,6 +68,11 @@ def draw_l_shape(c, cushion):
         "mid_length": (x + main_rect_w / 2, y - edge_offset),
         "mid_width": (x + main_rect_w + edge_offset, y + main_rect_h / 2),
     }
+    # Thickness label
+    c.setFont("Helvetica", 10)
+    c.setFillColor(black)
+    c.drawString(x + main_rect_w + 40, y +    main_rect_h/2 - 20, f"Thickness: {thickness}\"")
+
 
 
 
@@ -164,7 +172,7 @@ def draw_l_shape(c, cushion):
         draw_tie(*anchors["corner3"], "up")
 
 
-    
+
 
 
 
