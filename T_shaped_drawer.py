@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 import json
 import os
 
-def draw_t_shape(c, cushion,pdf_file):
+def draw_t_shape(c, cushion):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'T-Shape Cushion')
     length = cushion['length']
