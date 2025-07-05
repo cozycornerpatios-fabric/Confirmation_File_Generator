@@ -4,7 +4,7 @@ from reportlab.lib.colors import red, black, green, blue
 from reportlab.pdfgen import canvas
 import math
 
-def draw_equilateral_triangle(c,cushion,pdf_filename):
+def draw_equilateral_triangle(c,cushion):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'Equilateral Triangle Cushion')
     side = cushion['side']
@@ -70,7 +70,7 @@ def draw_equilateral_triangle(c,cushion,pdf_filename):
     c.drawString(mid_x - 15, mid_y + 5, f"{side} in")
 
 
-    # Add piping (magenta dashed lines along all sides)
+    # Add piping (blue dashed lines along all sides)
     if pipe == "Yes":
         offset = 7
         c.setStrokeColor(blue)
