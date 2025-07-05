@@ -11,7 +11,6 @@ def draw_t_shape(c, cushion):
     top_width = cushion['top_width']
     bottom_width = cushion['bottom_width']
     ear = cushion['ear']
-    height = cushion['height']
     thickness = cushion['thickness']
     fill = cushion['fill']
     fabric = cushion['fabric']
@@ -32,7 +31,6 @@ def draw_t_shape(c, cushion):
         ("Top Width", f"{top_width} inches"),
         ("Bottom Width", f"{bottom_width} inches"),
         ("Ear", f"{ear} inches"),
-        ("Height", f"{height} inches"),
         ("Thickness", f"{thickness} inches"),
         ("Fill", fill),
         ("Fabric", fabric),
