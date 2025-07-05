@@ -61,7 +61,7 @@ def generate_confirmation():
 
         for cushion in cushions:
             if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
-                if(cushion.get("top_width") > cushion.get("bottom_width"):
+                if cushion.get("top_width") > cushion.get("bottom_width"):
                     draw_t_shape(c, cushion)
                 else:
                     draw_l_shape(c, cushion)
