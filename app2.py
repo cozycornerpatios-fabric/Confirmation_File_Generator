@@ -57,7 +57,7 @@ def generate_confirmation():
         c.showPage()
 
         for cushion in cushions:
-            if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "height")):
+            if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
                 draw_l_shape(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "height","edge")):
                 draw_clipped_trapeze(c,cushion)
