@@ -9,15 +9,13 @@ def draw_l_shape(c, cushion):
     top_width = cushion['top_width']
     bottom_width = cushion['bottom_width']
     ear = cushion['ear']
-    height = cushion['height']
-    thickness = cushion.get('thickness', 'N/A') # Added thickness
+    thickness = cushion['thickness']
     fill = cushion['fill']
     fabric = cushion['fabric']
     zipper_position = cushion['zipper']
     piping = cushion.get('piping', 'No')
     ties = cushion.get('ties', 'None')
     quantity = cushion.get('quantity', 1)
-
 
     c.setFont("Helvetica-Bold", 14)
     y = page_height - inch
@@ -30,8 +28,7 @@ def draw_l_shape(c, cushion):
         ("Top Width", f"{top_width} inches"),
         ("Bottom Width", f"{bottom_width} inches"),
         ("Ear", f"{ear} inches"),
-        ("Height", f"{height} inches"),
-        ("Thickness", f"{thickness} inches"), # Added thickness to the specs list
+        ("Thickness", f"{thickness} inches"),
         ("Fill", fill),
         ("Fabric", fabric),
         ("Zipper Position", zipper_position),
@@ -58,60 +55,67 @@ def draw_l_shape(c, cushion):
     piping_margin = 0.1 * inch  # or adjust as needed
 
     # Anchor setup (choose edge depending on piping presence)
-    edge_offset = 0.1 * inch if piping.lower() == "yes" else 0
+
 
     anchors = {
-        "corner1": (x - edge_offset, y - edge_offset),  # Bottom-left
-        "corner2": (x - edge_offset, y + main_rect_h + edge_offset),  # Top-left
-        "corner3": (x + main_rect_w + edge_offset, y + main_rect_h + edge_offset),  # Top-right
-        "corner4": (x + main_rect_w + edge_offset, y + ear_h - edge_offset),  # Notch corner
-        "mid_length": (x + main_rect_w / 2, y - edge_offset),
-        "mid_width": (x + main_rect_w + edge_offset, y + main_rect_h / 2),
+        "corner1": (x , y ),  # Bottom-left
+        "corner2": (x , y + main_rect_h ),  # Top-left
+        "corner3": (x + main_rect_w , y + main_rect_h ),  # Top-right
+        "corner4": (x + main_rect_w , y + ear_h),  # Notch corner
+        "corner5": (x + ear_w, y + ear_h),
+        "corner6": (x + ear_w , y ),
     }
-    # Thickness label
-    c.setFont("Helvetica", 10)
-    c.setFillColor(black)
-    c.drawString(x + main_rect_w + 40, y +    main_rect_h/2 - 20, f"Thickness: {thickness}\"")
 
 
 
-
+    # Draw shape
     c.setStrokeColor(black)
     c.setLineWidth(1)
-
     p = c.beginPath()
-    p.moveTo(x, y)
-    p.lineTo(x, y + main_rect_h)
-    p.lineTo(x + main_rect_w, y + main_rect_h)
-    p.lineTo(x + main_rect_w, y + ear_h)
-    p.lineTo(x + main_rect_w - ear_w, y + ear_h)
-    p.lineTo(x + main_rect_w - ear_w, y)
+    p.moveTo(*anchors["corner1"])
+    p.lineTo(*anchors["corner2"])
+    p.lineTo(*anchors["corner3"])
+    p.lineTo(*anchors["corner4"])
+    p.lineTo(*anchors["corner5"])
+    p.lineTo(*anchors["corner6"])
     p.close()
     c.drawPath(p)
 
     c.setFont("Helvetica", 10)
     c.setFillColor(black)
     c.drawCentredString(x + main_rect_w / 2, y + main_rect_h - 10, f"{length}\"")
-    c.drawCentredString(x + 15, y + main_rect_h / 2, f"{bottom_width}\"")
+    c.drawCentredString(x + 10, y + main_rect_h / 2, f"{bottom_width}\"")
     c.drawCentredString(x + main_rect_w - 20, y + ear_h + main_rect_b / 2, f"{top_width}\"")
-    c.drawCentredString(x + main_rect_w - ear_w/2, y + ear_h + 5, f"{ear}\"")
+    c.drawCentredString((anchors["corner1"][0] + anchors["corner6"][0])/2,y+10, f"{ear}\"")
 
-    if piping.lower() in ["yes", "piping"]:
+    if piping.lower() == "yes":
         c.setStrokeColor(blue)
-        c.setLineWidth(1)
+        c.setLineWidth(2)
+        c.setDash(3, 3)
+
+        # Start piping path with margin
         p2 = c.beginPath()
-        p2.moveTo(x - piping_margin, y - piping_margin)
-        p2.lineTo(x - piping_margin, y + main_rect_h + piping_margin)
-        p2.lineTo(x + main_rect_w + piping_margin, y + main_rect_h + piping_margin)
-        p2.lineTo(x + main_rect_w + piping_margin, y + ear_h - piping_margin)
-        p2.lineTo(x + main_rect_w - ear_w - piping_margin, y + ear_h - piping_margin)
-        p2.lineTo(x + main_rect_w - ear_w - piping_margin, y - piping_margin)
+        # Move to bottom-left with margin
+        p2.moveTo(anchors["corner1"][0] - piping_margin, anchors["corner1"][1] - piping_margin)
+        # Left side up
+        p2.lineTo(anchors["corner2"][0] - piping_margin, anchors["corner2"][1] + piping_margin)
+        # Top left ear
+        p2.lineTo(anchors["corner3"][0] + piping_margin, anchors["corner3"][1] + piping_margin)
+        # Inward notch
+        p2.lineTo(anchors["corner4"][0] + piping_margin, anchors["corner4"][1] - piping_margin)
+        # Across notch top
+        p2.lineTo(anchors["corner5"][0] + piping_margin, anchors["corner5"][1] - piping_margin)
+        # Right side down notch
+        p2.lineTo(anchors["corner6"][0] + piping_margin, anchors["corner6"][1] - piping_margin)
+        # Close back to start
         p2.close()
+
         c.drawPath(p2)
+        c.setDash()  # Reset
         # Label and pointer line for Piping
         x1,y1 = anchors["corner4"]
-        label_x = x1 - main_rect_w/2
-        label_y = y1 - 5 - piping_margin
+        label_x = x1 + piping_margin + 5
+        label_y = y1 - 10 - piping_margin
 
         # Label text
         c.setFont("Helvetica", 10)
@@ -146,30 +150,46 @@ def draw_l_shape(c, cushion):
             c.line(x, y, x + offset, y - offset)
             c.drawCentredString(x + offset + 5, y, "Tie")
 
+
+    tie_anchors = {}
+    if piping.lower() == "yes":
+      # Calculate tie anchor points with piping margin
+      tie_anchors = {
+        "corner1": (anchors["corner1"][0] - piping_margin, anchors["corner1"][1] - piping_margin),
+        "corner2": (anchors["corner2"][0] - piping_margin, anchors["corner2"][1] + piping_margin),
+        "corner3": (anchors["corner3"][0] + piping_margin, anchors["corner3"][1] + piping_margin),
+        "corner4": (anchors["corner4"][0] + piping_margin, anchors["corner4"][1] - piping_margin),
+        "corner5": (anchors["corner5"][0] + piping_margin, anchors["corner5"][1] - piping_margin),
+        "corner6": (anchors["corner6"][0] + piping_margin, anchors["corner6"][1] - piping_margin)
+      }
+    else:
+      # Use main shape anchors if no piping
+      tie_anchors = anchors
+
     if ties == "2 Corner Ties along length":
-        draw_tie(*anchors["corner2"], "up")
-        draw_tie(*anchors["corner3"], "up")
+        draw_tie(*tie_anchors["corner2"], "up")
+        draw_tie(*tie_anchors["corner3"], "up")
 
     elif ties == "2 Length side ties":
-        x1,y1 = anchors["corner2"]
-        x2,y2 = anchors["corner3"]
+        x1,y1 = tie_anchors["corner2"]
+        x2,y2 = tie_anchors["corner3"]
         x1 += main_rect_w*0.25
         x2 = x2 - main_rect_w*0.25
         draw_tie(x1,y1,"up")
         draw_tie(x2,y2,"up")
 
     elif ties == "2 ties along the width":
-        x1,y1 = anchors["corner3"]
-        x2,y2 = anchors["corner4"]
-        y1 = y1 - main_rect_h*0.25
-        y2 += main_rect_h*0.25
-        draw_tie(x1,y1,"right")
-        draw_tie(x2,y2,"right")
+        x1,y1 = tie_anchors["corner1"]
+        x2,y2 = tie_anchors["corner2"]
+        y1 += main_rect_h*0.25
+        y2 = y2 - main_rect_h*0.25
+        draw_tie(x1,y1,"left")
+        draw_tie(x2,y2,"left")
 
     elif ties == "3 Corner ties":
-        draw_tie(*anchors["corner4"], "down")
-        draw_tie(*anchors["corner2"], "left")
-        draw_tie(*anchors["corner3"], "up")
+        draw_tie(*tie_anchors["corner1"], "left")
+        draw_tie(*tie_anchors["corner2"], "up")
+        draw_tie(*tie_anchors["corner3"], "right")
 
 
 
@@ -200,11 +220,45 @@ def draw_l_shape(c, cushion):
 
       elif zipper_position == "Bottom Width":
           # Bottom horizontal segment (bottom leg of L)
-          x1 = x + main_rect_w - ear_w
-          x2 = x + main_rect_w
-          y_z = y + ear_h
-          c.line(x1, y_z - 0.2 * inch, x2, y_z - 0.2 * inch)
-          c.drawString((x1 + x2) / 2 - 20, y_z - 0.5 * inch, "Zipper")
+          x_z = anchors["corner1"][0] - 5 - piping_margin
+          y1 = anchors["corner1"][1] - piping_margin
+          y2 = anchors["corner2"][1] + piping_margin
+          y_z = (y1 + y2)/2
+          c.line(x_z, y1, x_z, y2)
+          c.drawString(x_z - 40, y_z, "Zipper")
 
 
     c.showPage()
+
+# if __name__ == "__main__":
+#     from reportlab.pdfgen import canvas
+#     from reportlab.lib.pagesizes import letter
+#     import os
+
+#     test_cushion = {
+#         "cushion_name": "Test Cushion - 2 Same Side Long",
+#         "length": 73,
+#         # "width": 18,
+#         "thickness": 3,
+#         "top_width": 17.5,
+#         "bottom_width": 37,
+#         "ear": 5,
+#         "fill": "Poly Fiber",
+#         "fabric": "Outdoor Canvas",
+#         "zipper": "Top Width",
+#         "piping": "yes",
+#         "ties": "Top Width",  # Try with "2 Same Side Short"
+#         "quantity": 1
+#     }
+
+#     pdf_filename = "test_output.pdf"
+#     c = canvas.Canvas(pdf_filename, pagesize=letter)
+#     draw_l_shape(c, test_cushion)
+#     c.save()
+
+#     # Force download link for Colab
+#     try:
+#         from google.colab import files
+#         files.download(pdf_filename)
+#     except ImportError:
+#         print(f"Saved as {pdf_filename}. Not in Colab, manual download required.")
