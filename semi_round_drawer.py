@@ -11,7 +11,7 @@ def draw_semi_round(c, cushion):
     thickness = cushion['thickness']
     piping = cushion.get('piping', 'No')
     quantity = cushion.get('quantity', 1)
-    zipper_position = cushion.get('zipper_position', 'No')
+    zipper_position = cushion.get('zipper', 'No')
     ties = cushion.get('ties', 'No Ties')
 
 
