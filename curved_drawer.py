@@ -231,6 +231,8 @@ def draw_curved(c, cushion):
     c.drawCentredString(x0 + w/2, y0 + 12, f"{width_in}\"")
     # Side length (along left side)
     c.drawCentredString(x0 + 12, y0 + rect_h/2, f"{side_length_in}\"")
+    # thickness
+    c.drawCentredString(x0 - 50, y0 + rect_h/2, f"Thickness = {thickness}\"")
     # Middle length (arrow up the center)
     mid_x = x0 + w/2
     c.setDash(1, 2)
