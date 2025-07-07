@@ -9,6 +9,8 @@ from clipped_trapeze_drawer import draw_clipped_trapeze
 from T_shaped_drawer import draw_t_shape
 from round_drawer import draw_round
 from E_triangle_drawer import draw_equilateral_triangle
+from curved_drawer import draw_curved 
+from semi_round_drawer import draw_semi_round
 
 app = Flask(__name__)
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
@@ -66,7 +68,13 @@ def generate_confirmation():
                 else:
                     draw_l_shape(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("diameter", "thickness")):
-                draw_round(c, cushion)
+                name = cushion.get("cushion_name", "").lower()
+                if "semi" in name:
+                    draw_semi_round(c, cushion)
+                else:
+                    draw_round(c, cushion)
+            elif all(cushion.get(k, 0) > 0 for k in ("width", "side_length","middle_length")):
+                draw_curved(c,cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("side", "thickness")):
                 draw_equilateral_triangle(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "height","edge")):
