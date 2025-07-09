@@ -109,8 +109,8 @@ def draw_tapered_bolster(c, cushion):
     c.setFillColor(red)
     c.setStrokeColor(red)
     c.setLineWidth(1.2)
-    c.line(bl[0], bl[1]-5*piping_margin, br[0], br[1]-5*piping_margin)
-    c.drawString((bl[0]+br[0])/2 - 10, bl[1] - 7*piping_margin, "Zipper")
+    c.line(bl[0], bl[1]-15, br[0], br[1]-15)
+    c.drawString((bl[0]+br[0])/2 - 10, bl[1] -25, "Zipper")
 
     c.showPage()
 
@@ -122,9 +122,9 @@ def draw_tapered_bolster(c, cushion):
 #     pdf_filename = "tapered_bolster.pdf"
 #     data = {
 #         "cushion_name": "Tapered Bolster",
-#         "top_thickness":       30,
-#         "bottom_thickness":    50,
-#         "height":         20,
+#         "top_thickness":       2,
+#         "bottom_thickness":    5,
+#         "height":         23,
 #         "length":      3,
 #         "zipper":        "Angled",
 #         "piping":        "Yes",
