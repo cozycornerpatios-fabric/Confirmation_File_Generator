@@ -11,6 +11,12 @@ from round_drawer import draw_round
 from E_triangle_drawer import draw_equilateral_triangle
 from curved_drawer import draw_curved 
 from semi_round_drawer import draw_semi_round
+from 90_triangle_drawer import draw_right_triangle
+from Curved_indoor_Cushions_drawer import draw_curved_cushions
+from right_cushion_drawer import draw_right_cushion
+from tapered_bolster_drawer import draw_tapered_bolster
+
+
 
 app = Flask(__name__)
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
@@ -73,16 +79,26 @@ def generate_confirmation():
                     draw_semi_round(c, cushion)
                 else:
                     draw_round(c, cushion)
+            elif all(cushion.get(k, 0) > 0 for k in ("front_width_straight", "back_width_straight","thickness","front_width_curved","back_width_curved")):
+                draw_curved_cushion(c,cushion)
+            elif all(cushion.get(k, 0) > 0 for k in ("top_thickness", "bottom_thickness","height","length")):
+                draw_tapered_bolster(c,cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("width", "side_length","middle_length")):
                 draw_curved(c,cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("side", "thickness")):
                 draw_equilateral_triangle(c, cushion)
+            elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "length")):
+                draw_right_cushion(c,cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "height","edge")):
                 draw_clipped_trapeze(c,cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
                 draw_trapezium(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("width", "length", "thickness")):
-                draw_rectangle(c, cushion)
+                name = cushion.get("cushion_name", "").lower()
+                if "triangle" in name:
+                    draw_right_triangle(c, cushion)
+                else: 
+                    draw_rectangle(c, cushion)
             else:
                 raise ValueError("Unable to determine cushion shape. Missing key dimensions.")
 
