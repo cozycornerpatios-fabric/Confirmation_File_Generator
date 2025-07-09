@@ -123,7 +123,7 @@ def draw_right_triangle(c, cushion):
         c.line(x1 + nx, y1 + ny, x2 + nx, y2 + ny)
         c.drawString(mid_hyp[0] + nx, mid_hyp[1] + ny + 5, "Zipper")
 
-    c.showPage
+    c.showPage()
 
 
 # if __name__ == "__main__":
