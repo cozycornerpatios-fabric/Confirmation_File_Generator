@@ -25,8 +25,8 @@ def draw_rectangle(c, cushion):
     short_side_length = min(length_in, width_in)
     long_side_length = max(length_in, width_in)
 
-    
-    tie_offset_from_corner = cushion['tie_offset_from_corner']
+
+
     # if not isinstance(tie_offset_from_corner, (int, float)) or tie_offset_from_corner < 0:
     #     # return jsonify({"error": f"Invalid tie_offset_from_corner: must be a non-negative number."}), 400
     #     print(f"Error: Invalid tie_offset_from_corner: must be a non-negative number.")
@@ -137,27 +137,40 @@ def draw_rectangle(c, cushion):
                 c.line(x, y, x - tie_len, y + tie_len)
                 label_x = x - tie_len - 10
                 label_y = y
+                # Draw label
+                c.setFont("Helvetica", 8)
+                c.setFillColor(green)
+                c.drawString(label_x, label_y, "Tie")
             elif direction == 'right':
                 c.line(x, y, x + tie_len, y - tie_len)
                 c.line(x, y, x + tie_len, y + tie_len)
                 label_x = x + tie_len + 2
                 label_y = y
+                # Draw label
+                c.setFont("Helvetica", 8)
+                c.setFillColor(green)
+                c.drawString(label_x, label_y, "Tie")
         elif orientation == 'vertical':
             if direction == 'down':
                 c.line(x, y, x - tie_len, y - tie_len)
                 c.line(x, y, x + tie_len, y - tie_len)
                 label_x = x
                 label_y = y - tie_len - 8
+                # Draw label
+                c.setFont("Helvetica", 8)
+                c.setFillColor(green)
+                c.drawString(label_x, label_y, "Tie")
             elif direction == 'up':
                 c.line(x, y, x - tie_len, y + tie_len)
                 c.line(x, y, x + tie_len, y + tie_len)
                 label_x = x
                 label_y = y + tie_len + 2
+                # Draw label
+                c.setFont("Helvetica", 8)
+                c.setFillColor(green)
+                c.drawString(label_x, label_y, "Tie")
 
-        # Draw label
-        c.setFont("Helvetica", 8)
-        c.setFillColor(green)
-        c.drawString(label_x, label_y, "Tie")
+
 
 
     if ties.lower() != "none":
@@ -167,60 +180,7 @@ def draw_rectangle(c, cushion):
         hs = horizontal_side + 2 * piping_margin
         vs = vertical_side + 2 * piping_margin
 
-        if ties == "2 Side Short" or ties=="2 Side":
-            if short_side_is_vertical:
-                draw_tie(xo,  yo + tie_offset, 'left', 'horizontal')
-                draw_tie(xo + hs,  yo + tie_offset, 'right', 'horizontal')
-                c.setDash(1, 2)
-                c.line(xo - 10,yo,xo-10,yo + tie_offset)
-                c.line(xo + hs + 10,yo,xo + hs + 10,yo + tie_offset)
-                c.setFont("Helvetica", 8)
-                c.setFillColor(green)
-                if(tie_offset>0):
-                        c.drawString(xo - 30, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
-                        c.drawString(xo + hs + 20, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
-            else:
-                draw_tie(xo + tie_offset, yo, 'down', 'vertical')
-                draw_tie(xo + tie_offset, yo + vs, 'up', 'vertical')
-                c.setDash(1, 2)
-                c.line(xo,yo + vs + 10,xo + tie_offset,yo + vs + 10)
-                c.line(xo,yo - 10,xo + tie_offset,yo - 10)
-                c.setFont("Helvetica", 8)
-                c.setFillColor(green)
-                if(tie_offset>0):
-                        c.drawString(xo + tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
-                        c.drawString(xo + tie_offset/2, yo - 20, f" {tie_offset_from_corner}\"")
-
-
-        elif ties == "2 Side Long":
-            if short_side_is_vertical:
-                draw_tie(xo + tie_offset, yo, 'down', 'vertical')
-                draw_tie(xo + tie_offset, yo + vs, 'up', 'vertical')
-                c.setDash(1, 2)
-                c.line(xo,yo + vs + 10,xo + tie_offset,yo + vs + 10)
-                c.line(xo,yo - 10,xo + tie_offset,yo - 10)
-                c.setFont("Helvetica", 8)
-                c.setFillColor(green)
-                if(tie_offset>0):
-                      c.drawString(xo + tie_offset/2, yo + vs + 20, f" {tie_offset_from_corner}\"")
-                      c.drawString(xo + tie_offset/2, yo - 20, f" {tie_offset_from_corner}\"")
-            else:
-                draw_tie(xo, yo + tie_offset, 'left', 'horizontal')
-                draw_tie(xo + hs, yo + tie_offset, 'right', 'horizontal')
-                c.setDash(1, 2)
-                c.line(xo - 10,yo,xo-10,yo + tie_offset)
-                c.line(xo + hs + 10,yo,xo + hs + 10,yo + tie_offset)
-                c.setFont("Helvetica", 8)
-                c.setFillColor(green)
-                if(tie_offset>0):
-                        c.drawString(xo - 30, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
-                        c.drawString(xo + hs + 20, yo + tie_offset/2, f" {tie_offset_from_corner}\"")
-
-            # c.setFont("Helvetica", 8)
-            # c.setFillColor(green)
-            # c.drawString(label_x, label_y, f"Tie ({tie_offset_from_corner}\")")
-
-        elif ties == "4 Side Short" or ties=="4 Side":
+        if ties == "4 Short Sides" or ties=="4 Side":
             if short_side_is_vertical:
                 draw_tie(xo, yo + tie_offset, 'left', 'horizontal')
                 draw_tie(xo, yo + vs - tie_offset, 'left', 'horizontal')
@@ -260,7 +220,7 @@ def draw_rectangle(c, cushion):
             # c.setFillColor(green)
             # c.drawString(label_x, label_y, f"Tie ({tie_offset_from_corner}\")")
 
-        elif ties == "4 Side Long":
+        elif ties == "4 Long Sides":
             if short_side_is_vertical:
                 draw_tie(xo + tie_offset, yo, 'down', 'vertical')
                 draw_tie(xo + hs - tie_offset, yo, 'down', 'vertical')
@@ -300,7 +260,7 @@ def draw_rectangle(c, cushion):
             # c.setFillColor(green)
             # c.drawString(label_x, label_y, f"Tie ({tie_offset_from_corner}\")")
 
-        elif ties == "4 Corner":
+        elif ties == "4 Corners":
             draw_tie(xo, yo, 'left', 'horizontal')
             draw_tie(xo, yo + vs, 'left', 'horizontal')
             draw_tie(xo + hs, yo, 'right', 'horizontal')
@@ -335,7 +295,7 @@ def draw_rectangle(c, cushion):
             c.drawString(x_origin + horizontal_side - width_offset_scaled/2, y_origin + length_offset_scaled + 10 , f"{tie_offset_width}\"")
             c.drawString(x_origin + horizontal_side - width_offset_scaled - 10, y_origin + length_offset_scaled/2, f"{tie_offset_length}\"")
 
-        elif ties == "2 Same Side Short":
+        elif ties == "2 Short Sides":
             if is_zipper_on_long:
                # zipper on short → vertical → place ties left vertical
                 draw_tie(xo, yo + tie_offset, 'left', 'horizontal')
@@ -358,7 +318,7 @@ def draw_rectangle(c, cushion):
                     c.drawString(xo + hs - tie_offset / 2, yo + vs + 20, f"{tie_offset_from_corner}\"")
 
 
-        elif ties == "2 Same Side Long":
+        elif ties == "2 Long Side":
             if is_zipper_on_long:
                 # zipper on long → horizontal → place ties top horizontal
                 draw_tie(xo + tie_offset, yo + vs, 'up', 'vertical')
@@ -380,7 +340,46 @@ def draw_rectangle(c, cushion):
                     c.drawString(xo - 30, yo + tie_offset / 2, f"{tie_offset_from_corner}\"")
                     c.drawString(xo - 30, yo + vs - tie_offset / 2, f"{tie_offset_from_corner}\"")
 
+        elif ties == "2 Corners":
+          if is_zipper_on_long:
+            draw_tie(xo , yo + vs, 'left', 'horizontal')
+            draw_tie(xo , yo , 'left', 'horizontal')
+
+          else:
+            draw_tie(xo + hs, yo + vs, 'up', 'vertical')
+            draw_tie(xo , yo + vs , 'up', 'vertical')
+
 
 
 
     c.showPage()
+
+# if __name__ == "__main__":
+#     from reportlab.pdfgen import canvas
+#     from reportlab.lib.pagesizes import letter
+#     import os
+
+#     test_cushion = {
+#         "cushion_name": "Test Cushion - 2 Same Side Long",
+#         "length": 24,
+#         "width": 18,
+#         "thickness": 3,
+#         "fill": "Poly Fiber",
+#         "fabric": "Outdoor Canvas",
+#         "zipper": "Long Side",
+#         "piping": "Yes",
+#         "ties": "2 Corners",  # Try with "2 Same Side Short"
+#         "quantity": 1
+#     }
+
+#     pdf_filename = "test_output.pdf"
+#     c = canvas.Canvas(pdf_filename, pagesize=letter)
+#     draw_rectangle(c, test_cushion)
+#     c.save()
+
+#     # Force download link for Colab
+#     try:
+#         from google.colab import files
+# #         files.download(pdf_filename)
+# #     except ImportError:
+#         print(f"Saved as {pdf_filename}. Not in Colab, manual download required.")
