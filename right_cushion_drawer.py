@@ -3,7 +3,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.colors import black, red, blue
 import math
 
-def draw_tapered_bolster(c, cushion):
+def draw_right_cushion(c, cushion):
     # ─── Unpack & Header ───
     page_w, page_h = letter
     name           = cushion.get("cushion_name",   "Tapered Bolster")
