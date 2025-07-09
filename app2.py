@@ -12,7 +12,7 @@ from E_triangle_drawer import draw_equilateral_triangle
 from curved_drawer import draw_curved 
 from semi_round_drawer import draw_semi_round
 from right_triangle_drawer import draw_right_triangle
-from Curved_indoor_Cushions_drawer import draw_curved_cushions
+from Curved_indoor_Cushions_drawer import draw_curved_cushion
 from right_cushion_drawer import draw_right_cushion
 from tapered_bolster_drawer import draw_tapered_bolster
 
