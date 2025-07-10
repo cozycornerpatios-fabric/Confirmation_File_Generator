@@ -17,7 +17,7 @@ def draw_curved_cushion(c, cushion):
     # ties = cushion.get('ties', 'No Ties')
     # Extract values
       # Extract inputs
-    
+
     length = cushion['length']
     front_width_straight = cushion['front_width_straight']
     back_width_straight = cushion['back_width_straight']
@@ -45,10 +45,10 @@ def draw_curved_cushion(c, cushion):
         # ("Thickness", f"{thickness} inches"),
         ("Shape", "Curved"),
         ("Length", f"{length} inches"),
-        ("Front Width(Straight)", f"{ front_width_straight} inches"),
-        ("Back Width(Straight)", f"{ back_width_straight} inches"),
-        ("Front Width(Curved)", f"{ front_width_curved} inches"),
-        ("Back Width(Curved)", f"{ back_width_curved} inches"),
+        ("Front Width(Straight)", f"{  front_width_straight} inches"),
+        ("Back Width(Straight)", f"{  back_width_straight} inches"),
+        ("Front Width(Curved)", f"{  front_width_curved} inches"),
+        ("Back Width(Curved)", f"{  back_width_curved} inches"),
         ("Thickness", f"{thickness} inches"),
         ("Fill", fill),
         ("Fabric Collection", fabric_collection),
@@ -109,13 +109,13 @@ def draw_curved_cushion(c, cushion):
     diagram_margin_top = 0.5 * inch
     margin_bottom = 1 * inch
 
-    
+
 
     # --- Calculate spec block height ---
     # spec_line_height = 0.3 * inch
     # spec_title_height = 0.4 * inch  # padding above and below
     # spec_block_height = len(specs) * spec_line_height + spec_title_height + 1 * inch
-  
+
     # --- Available height below text ---
     available_height = page_height - diagram_margin_bottom - diagram_margin_top - (page_height - y)
 
@@ -138,7 +138,7 @@ def draw_curved_cushion(c, cushion):
     depth = depth_in * inch * scale_factor
 
     # --- Center positions ---
-   
+
     center_x = page_width / 2
     center_y = diagram_margin_bottom + depth / 2
 
@@ -178,7 +178,7 @@ def draw_curved_cushion(c, cushion):
 
     # 2. 📏 Front Width (Straight) — inner arc bottom
     mid_fw_x = (x_inner[0] + x_inner[-1]) / 2
-    mid_fw_y = (y_inner[0] + y_inner[-1]) / 2            
+    mid_fw_y = (y_inner[0] + y_inner[-1]) / 2
     # x_left = x_inner[0]
     # x_right = x_inner[-1]
     # c.line(x_left, fw_y, x_right, fw_y)
@@ -217,13 +217,13 @@ def draw_curved_cushion(c, cushion):
     # c.setDash(2,2)
     for i in range(segments - 1):
         c.line(x_inner[i], y_inner[i], x_inner[i+1], y_inner[i+1])
-   
-   
+
+
     c.setStrokeColor(black)
     # c.setDash(2,2)
     for i in range(segments - 1):
         c.line(x_outer[i], y_outer[i], x_outer[i+1], y_outer[i+1])
-    
+
     c.line(x_inner[0], y_inner[0], x_outer[0], y_outer[0])
     c.line(x_inner[-1], y_inner[-1], x_outer[-1], y_outer[-1])
     # c.setDash([])  # Reset
@@ -248,7 +248,7 @@ def draw_curved_cushion(c, cushion):
   #   for i in range(segments - 1):
   #       c.line(x_outer_guide[i], y_outer_guide[i], x_outer_guide[i+1], y_outer_guide[i+1])
 
-      
+
 
     c.setDash([])  # Reset dash
     #     # Label following Front Width (Curved) guide arc
@@ -285,7 +285,7 @@ def draw_curved_cushion(c, cushion):
     # c.setDash([])
     c.line(x_inner[0], y_inner[0], x_outer[0], y_outer[0])
     c.line(x_inner[-1], y_inner[-1], x_outer[-1], y_outer[-1])
-   
+
 
     # Draw straight lines
     c.setStrokeColor(green)
@@ -330,9 +330,9 @@ def draw_curved_cushion(c, cushion):
 
     # Draw inner arc (front curve)
     for i in range(segments - 1):
-        
+
         c.line(x_piping_inner[i], y_piping_inner[i], x_piping_inner[i+1], y_piping_inner[i+1])
-        
+
     # Right side (connect end of inner to end of outer)
     c.line(x_piping_inner[-1]-2, y_piping_inner[-1] - 2, x_piping_outer[-1]-3, y_piping_outer[-1] - 2)
 
@@ -392,7 +392,7 @@ def draw_curved_cushion(c, cushion):
 
         c.line(zip_x1 - 15, zip_y1, zip_x2 - 15, zip_y2)
 
-       
+
 
         # Label for side zipper
         label_x = zip_x2 + 5
@@ -402,12 +402,12 @@ def draw_curved_cushion(c, cushion):
 
 
 
-       
+
 
 
 
     c.showPage()
-#     from reportlab.pdfgen import canvas
+# from reportlab.pdfgen import canvas
 
 # # Define cushion data
 # cushion_data = {
@@ -434,9 +434,9 @@ def draw_curved_cushion(c, cushion):
 # pdf_filename = "test_output.pdf"
 # c = canvas.Canvas(pdf_filename, pagesize=letter)
 #     # Call the function directly
-# draw_curved_cushion(c,cushion_data,pdf_filename)
+# draw_curved_cushion(c,cushion_data)
 
-
+# c.save() # Add this line to save the PDF
 
 #  # Force download link for Colab
 # try:
