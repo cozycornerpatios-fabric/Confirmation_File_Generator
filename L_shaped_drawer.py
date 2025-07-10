@@ -2,6 +2,24 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import red, black, green, blue
 
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= line_height
+    return y  # return new y position
+
 def draw_l_shape(c, cushion):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'L-Shape Cushion')
@@ -36,12 +54,17 @@ def draw_l_shape(c, cushion):
         ("Ties", ties)
     ]
 
+    left_x = 1 * inch
+    y = page_height - 3 * inch # Adjusted initial y position for specs
+    
+
     for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(inch, y, f"{label}:")
+        c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        c.drawString(inch + 120, y, value)
-        y -= 0.3 * inch
+        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows
 
     scale = (page_width / 3) / max(length, top_width, bottom_width, ear)
     x = page_width / 2 - (length * scale) / 2
@@ -247,7 +270,7 @@ def draw_l_shape(c, cushion):
 #         "top_width": 17.5,
 #         "bottom_width": 37,
 #         "ear": 5,
-#         "fill": "Poly Fiber",
+#         "fill": "Poly Fiber asdf asfgdfgvfdvfrvrttttttttttttttttttttttttt grhyujtrf ",
 #         "fabric": "Outdoor Canvas",
 #         "zipper": "Top Width",
 #         "piping": "yes",
