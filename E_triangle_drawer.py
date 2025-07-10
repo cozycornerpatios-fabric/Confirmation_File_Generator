@@ -4,7 +4,25 @@ from reportlab.lib.colors import red, black, green, blue
 from reportlab.pdfgen import canvas
 import math
 
-def draw_equilateral_triangle(c,cushion):
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= line_height
+    return y  # return new y position
+
+def draw_equilateral_triangle(c,cushion,pdf_filename):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'Equilateral Triangle Cushion')
     side = cushion['side']
@@ -13,6 +31,10 @@ def draw_equilateral_triangle(c,cushion):
     ties = cushion.get('ties', 'None')
     quantity = cushion.get('quantity', 1)
     pipe = cushion.get('pipe', False)
+    fill = cushion['fill']
+    fabric = cushion['fabric']
+   
+
 
     c.setFont("Helvetica-Bold", 14)
     y = page_height - inch
@@ -25,16 +47,27 @@ def draw_equilateral_triangle(c,cushion):
         ("Thickness", f"{thickness} inches"),
         ("Zipper", zipper),
         ("Ties", ties),
-        ("Piping", "Yes" if pipe else "No")
+        ("Piping", "Yes" if pipe else "No"),
+        ("Fill", fill),
+        ("Fabric Collection", fabric)
+   
+        
+
 
     ]
 
+
+    left_x = 1 * inch
+    y = page_height - 3 * inch # Adjusted initial y position for specs
+    
+
     for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(inch, y, f"{label}:")
+        c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        c.drawString(inch + 100, y, value)
-        y -= 0.3 * inch
+        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows
 
     # Scale to fit the page nicely
     scale = (page_width / 3) / side
@@ -197,20 +230,20 @@ def draw_equilateral_triangle(c,cushion):
 #         "pipe" :"Yes",
 #         "zipper": "side",  # or "side"
 #         "ties": "2 Side Ties",  # "2 Corner Ties","2 Side Ties","3 Corner Ties","No Ties"
-#         "fabric": "Stamskin F430 - 20290 Chalk Blue / Piezo Blue",
+#         "fabric": "Stamskin F430 - 20290 Chalk Blue / Piezo Bluedfffffffffffffffffffffffffffffffffffffffffffffffffffffffffd",
 #         "fill": "DryFast Foam",
 #         "price": "296.55 × 1 = 296.55",
 #         "quantity": 1
 #     }
 
-    # pdf_filename = "equilateral_triangle_cushion.pdf"
-    # c = canvas.Canvas(pdf_filename, pagesize=letter)
-    # pdf_file = draw_equilateral_triangle(c, cushion_data, pdf_filename)
+#     pdf_filename = "equilateral_triangle_cushion.pdf"
+#     c = canvas.Canvas(pdf_filename, pagesize=letter)
+#     pdf_file = draw_equilateral_triangle(c, cushion_data, pdf_filename)
 
-    # # Add this line to save the PDF
+#     # Add this line to save the PDF
 
-    # try:
-    #     from google.colab import files
-    #     files.download(pdf_filename)
-    # except ImportError:
-    #     print(f"PDF saved as {pdf_file}")
+#     try:
+#         from google.colab import files
+#         files.download(pdf_filename)
+#     except ImportError:
+#         print(f"PDF saved as {pdf_file}")
