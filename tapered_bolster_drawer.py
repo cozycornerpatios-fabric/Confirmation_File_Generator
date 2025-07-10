@@ -54,7 +54,7 @@ def draw_tapered_bolster(c, cushion):
         ("Fill",            fill)
     ]
     left_x = 1 * inch
-    y = page_h - 3 * inch # Adjusted initial y position for specs
+    # y = page_h - 3 * inch # Adjusted initial y position for specs
     
 
     for label, value in specs:
