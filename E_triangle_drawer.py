@@ -22,7 +22,7 @@ def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size
         y -= line_height
     return y  # return new y position
 
-def draw_equilateral_triangle(c,cushion,pdf_filename):
+def draw_equilateral_triangle(c,cushion):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'Equilateral Triangle Cushion')
     side = cushion['side']
