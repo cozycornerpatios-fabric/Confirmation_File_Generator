@@ -22,7 +22,7 @@ def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size
     return y  # return new y position
 
 
-def draw_t_shape(c, cushion,pdf_filename):
+def draw_t_shape(c, cushion):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'T-Shape Cushion')
     length = cushion['length']
