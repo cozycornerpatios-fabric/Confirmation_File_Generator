@@ -19,10 +19,10 @@ def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size
             c.drawString(x, y, line)
             y -= line_height
             line = word
-     if line:
+    if line:
          c.drawString(x, y, line)
          y -= line_height
-     return y  # return new y position
+    return y  # return new y position
 
 def draw_clipped_trapeze(c,cushion): 
     cushion_name = cushion.get('cushion_name', 'Cushion Specifications')
@@ -73,25 +73,29 @@ def draw_clipped_trapeze(c,cushion):
 
 
     specs = [
-        f"Bottom Width: {bottom_width} in",
-        f"Top Width: {top_width} in",
-        f"Height: {height_in} in",
-        f"Clipping Edge: {edge} in",
-        f"Thickness: {thickness} in",
-        f"Fill: {fill}",
-        f"Fabric: {fabric}",
-        f"Zipper:  {zipper_position}",
-        f"Piping: {piping}",
-        f"Ties: {ties}",
+        ("Bottom Width", f"{bottom_width} in"),
+        ("Top Width", f"{top_width} in"),
+        ("Height",f"{height_in} in"),
+        ("Clipping Edge", f"{edge} in"),
+        ("Thickness", f"{thickness} in"),
+        ("Fill", fill),
+        ("Fabric", fabric),
+        ("Zipper", zipper_position),
+        ("Piping",piping),
+        ("Ties",ties)
 
     ]
 
    
+    left_x = 1 * inch
+    y = height - 3 * inch # Adjusted initial y position for specs
+    
+
     for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
         c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        max_value_width = width - (left_x + 130 + inch)  # dynamic width limit
         y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
         y -= 4  # extra spacing between spec rows
 
@@ -407,7 +411,7 @@ def draw_clipped_trapeze(c,cushion):
         else:
             z1 = verts[0][0], verts[0][1] - offset_zipper
             z2 = verts[1][0], verts[1][1] - offset_zipper
-    c.showPage()
+#     c.showPage()
 
 # if __name__ == "__main__":
 #     from reportlab.pdfgen import canvas
