@@ -16,6 +16,8 @@ def draw_curved(c, cushion):
     piping            = cushion.get('piping')
     zipper_on         = cushion.get('zipper')
     ties              = cushion.get('ties')
+    fabric            = cushion.get('fabric')
+    fill              = cushion.get('fill')
 
     # --- header and spec table ---
     left_x = inch
@@ -30,6 +32,8 @@ def draw_curved(c, cushion):
         ("Side Length",  f"{side_length_in}\""),
         ("Middle Length",f"{middle_length_in}\""),
         ("Thickness",    f"{thickness}\""),
+        ("Fabric",       fabric),
+        ("Fill",         fill)
     ]
     for label, val in specs:
         c.setFont("Helvetica-Bold", 12)
@@ -66,7 +70,7 @@ def draw_curved(c, cushion):
           y0 + rect_h + head_b,
           startAng=0,
           extent=180)
-    
+
         # --- PIPING OUTLINE (0.5" margin) ---
     if piping.lower() in ["yes", "piping"]:
         # 0.5" of physical piping around the cushion
@@ -84,7 +88,7 @@ def draw_curved(c, cushion):
         # right side
         c.line(x0 + w + piping_margin, y0 - piping_margin,
                x0 + w + piping_margin, y0 + rect_h + piping_margin)
-        
+
         # label for piping
         c.setFont("Helvetica-Bold", 12)
         c.setFillColor(blue)
@@ -96,9 +100,9 @@ def draw_curved(c, cushion):
               x0 + w + piping_margin,
               y0 + rect_h + head_b + piping_margin,
               startAng=0, extent=180)
-        
 
-    
+
+
     def draw_tie(c, x, y, direction, orientation='horizontal'):
         """
         c           : your Canvas
@@ -108,7 +112,7 @@ def draw_curved(c, cushion):
         """
         # how long each arm of the tie is, in page-points
         tie_len = 0.3 * inch
-        c.setDash()  
+        c.setDash()
 
         if orientation == 'horizontal':
             if direction == 'left':
@@ -215,7 +219,7 @@ def draw_curved(c, cushion):
         y_r = y_l
         draw_tie(c, x_r, y_r, 'right', 'horizontal')
 
-        
+
     else:
         # unexpected option
         print(f"Warning: unrecognized ties option: {ties!r}")
@@ -237,7 +241,7 @@ def draw_curved(c, cushion):
     mid_x = x0 + w/2
     c.setDash(1, 2)
     c.line(mid_x, y0, mid_x, y0 + rect_h + head_b)
-    c.setDash()  
+    c.setDash()
     c.drawString(mid_x + 5, y0 + (rect_h + head_b)/2, f"{middle_length_in}\"")
 
 
