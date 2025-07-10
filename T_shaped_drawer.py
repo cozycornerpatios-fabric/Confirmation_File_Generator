@@ -3,8 +3,26 @@ from reportlab.lib.units import inch
 from reportlab.lib.colors import red, black, green, blue
 from reportlab.pdfgen import canvas
 
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= line_height
+    return y  # return new y position
 
-def draw_t_shape(c, cushion):
+
+def draw_t_shape(c, cushion,pdf_filename):
     page_width, page_height = letter
     cushion_name = cushion.get('cushion_name', 'T-Shape Cushion')
     length = cushion['length']
@@ -39,12 +57,17 @@ def draw_t_shape(c, cushion):
         ("Ties", ties)
     ]
 
+    left_x = 1 * inch
+    y = page_height - 3 * inch # Adjusted initial y position for specs
+    
+
     for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(inch, y, f"{label}:")
+        c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        c.drawString(inch + 120, y, value)
-        y -= 0.3 * inch
+        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows
 
     # Diagram calculation
     scale = (page_width / 3) / max(length, top_width, bottom_width, ear)
@@ -285,7 +308,7 @@ def draw_t_shape(c, cushion):
 
 
     c.showPage()
-
+#     c.save()
 
 
 
@@ -324,8 +347,3 @@ def draw_t_shape(c, cushion):
 #     except ImportError:
 #         print(f"PDF saved as {pdf_file}")
    
-
-
-
-
-
