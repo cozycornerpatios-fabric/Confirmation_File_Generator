@@ -6,23 +6,23 @@ import uuid
 import math
 
 
- def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
-     from reportlab.pdfbase.pdfmetrics import stringWidth
-     words = text.split()
-     line = ""
-     for word in words:
-         test_line = f"{line} {word}".strip()
-         width = stringWidth(test_line, font_name, font_size)
-         if width <= max_width:
-             line = test_line
-         else:
-             c.drawString(x, y, line)
-             y -= line_height
-             line = word
-      if line:
-          c.drawString(x, y, line)
-          y -= line_height
-      return y  # return new y position
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+     if line:
+         c.drawString(x, y, line)
+         y -= line_height
+     return y  # return new y position
 
 def draw_clipped_trapeze(c,cushion): 
     cushion_name = cushion.get('cushion_name', 'Cushion Specifications')
