@@ -127,7 +127,10 @@ def draw_l_shape(c, cushion):
         # c.setLineWidth(1)
         # c.line(label_x, label_y + 2, label_x, y1 - piping_margin)
 
-
+    #thickness label
+    c.setFont("Helvetica", 10)
+    c.setFillColor(black)
+    c.drawString(x + main_rect_w + 40, y + main_rect_h/2 - 20, f"Thickness: {thickness}\"")
     def draw_tie(x, y, direction):
         offset = 20
         c.setStrokeColor(green)
@@ -229,6 +232,7 @@ def draw_l_shape(c, cushion):
 
 
     c.showPage()
+
 
 # if __name__ == "__main__":
 #     from reportlab.pdfgen import canvas
