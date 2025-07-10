@@ -4,6 +4,24 @@ from reportlab.lib.colors import red, black, green, blue
 from reportlab.pdfgen import canvas
 import math
 
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= line_height
+    return y  # return new y position
+
 def draw_right_triangle(c, cushion):
     # --- Header & specs ---
     page_w, page_h = letter
@@ -32,12 +50,17 @@ def draw_right_triangle(c, cushion):
         ("Fabric",    cushion.get("fabric", "")),
         ("Fill",      cushion.get("fill", ""))
     ]
-    for label, val in specs:
+    left_x = 1 * inch
+    y = page_h - 3 * inch # Adjusted initial y position for specs
+    
+
+    for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(inch, y, f"{label}:")
+        c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        c.drawString(inch + 100, y, val)
-        y -= 0.3 * inch
+        max_value_width = page_w - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows
 
     # --- Scale & vertex coords ---
     scale = (page_w / 3) / max(width, length)
@@ -125,25 +148,25 @@ def draw_right_triangle(c, cushion):
     c.showPage()
 
 
-# if __name__ == "__main__":
-#     cushion_data = {
-#         "cushion_name": "Right Triangle Cushion",
-#         "width": 50,
-#         "length": 20,
-#         "thickness": 2,
-#         "zipper": "width",
-#         "pipe": True,
-#         "ties": "2 Side Ties",
-#         "fabric": "Stamskin F430 - 20290 Chalk Blue / Piezo Blue",
-#         "fill": "DryFast Foam",
-#         "quantity": 1
-#     }
-#     pdf_filename = "right_triangle_cushion.pdf"
-#     c = canvas.Canvas(pdf_filename, pagesize=letter)
-#     draw_right_triangle(c, cushion_data)
-#     c.save()
-#     try:
-#         from google.colab import files
-#         files.download(pdf_filename)
-#     except ImportError:
-#         print(f"PDF saved as {pdf_filename}")
+if __name__ == "__main__":
+    cushion_data = {
+        "cushion_name": "Right Triangle Cushion",
+        "width": 50,
+        "length": 20,
+        "thickness": 2,
+        "zipper": "width",
+        "pipe": True,
+        "ties": "2 Side Ties",
+        "fabric": "Stamskin F430 - 20290 Chalk Blue / Piezo Blue",
+        "fill": "DryFast Foam",
+        "quantity": 1
+    }
+    pdf_filename = "right_triangle_cushion.pdf"
+    c = canvas.Canvas(pdf_filename, pagesize=letter)
+    draw_right_triangle(c, cushion_data)
+    c.save()
+    try:
+        from google.colab import files
+        files.download(pdf_filename)
+    except ImportError:
+        print(f"PDF saved as {pdf_filename}")
