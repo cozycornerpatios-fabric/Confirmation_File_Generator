@@ -55,7 +55,7 @@ def draw_l_shape(c, cushion):
     ]
 
     left_x = 1 * inch
-    y = page_height - 3 * inch # Adjusted initial y position for specs
+    # y = page_height - 3 * inch # Adjusted initial y position for specs
     
 
     for label, value in specs:
