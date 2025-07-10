@@ -169,10 +169,15 @@ def draw_trapezium(c,cushion):
     max_physical_width = max(top_base_in, bottom_base_in)
     max_physical_height = height_in
 
-    # Compute scale to fit both width and height
-    scale_x = usable_width / max_physical_width
-    scale_y = diagram_usable_height / max_physical_height
+    # Constraint dimensions
+    max_draw_width = page_width * 0.5  # 1/2 of page width
+    max_draw_height = page_height * (1/3)  # 1/3 of page height
+    
+    # Compute scale factor based on max allowed area
+    scale_x = max_draw_width / max_physical_width
+    scale_y = max_draw_height / max_physical_height
     scale = min(scale_x, scale_y)
+
 
     # Recalculate dimensions
     top_base = top_base_in * scale
