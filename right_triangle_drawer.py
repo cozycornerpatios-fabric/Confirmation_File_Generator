@@ -30,8 +30,7 @@ def draw_right_triangle(c, cushion):
         # ("Ties",      ties),
         ("Piping",    "Yes" if pipe else "No"),
         ("Fabric",    cushion.get("fabric", "")),
-        ("Fill",      cushion.get("fill", "")),
-        ("Price",     cushion.get("price", "")),
+        ("Fill",      cushion.get("fill", ""))
     ]
     for label, val in specs:
         c.setFont("Helvetica-Bold", 12)
@@ -129,15 +128,14 @@ def draw_right_triangle(c, cushion):
 # if __name__ == "__main__":
 #     cushion_data = {
 #         "cushion_name": "Right Triangle Cushion",
-#         "width": 8,
-#         "length": 50,
+#         "width": 50,
+#         "length": 20,
 #         "thickness": 2,
 #         "zipper": "width",
 #         "pipe": True,
 #         "ties": "2 Side Ties",
 #         "fabric": "Stamskin F430 - 20290 Chalk Blue / Piezo Blue",
 #         "fill": "DryFast Foam",
-#         "price": "296.55 × 1 = 296.55",
 #         "quantity": 1
 #     }
 #     pdf_filename = "right_triangle_cushion.pdf"
@@ -149,4 +147,3 @@ def draw_right_triangle(c, cushion):
 #         files.download(pdf_filename)
 #     except ImportError:
 #         print(f"PDF saved as {pdf_filename}")
-
