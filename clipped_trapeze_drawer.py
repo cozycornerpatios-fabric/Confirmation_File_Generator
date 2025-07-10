@@ -130,8 +130,12 @@ def draw_clipped_trapeze(c,cushion):
     padding_x = 1.0 * inch
     diagram_bottom = 0.5 * inch  # bottom margin
     diagram_top = y - 0.25 * inch  # just below specs text
-    usable_height = diagram_top - diagram_bottom
-    usable_width = width - 2 * padding_x
+    max_height_limit = height / 3     # 1/3 of page height
+    max_width_limit = width / 2       # 1/2 of page width
+    
+    usable_height = min(diagram_top - diagram_bottom, max_height_limit)
+    usable_width = min(width - 2 * padding_x, max_width_limit)
+
 
     # Compute scale
     scale_x = usable_width / bottom_width
