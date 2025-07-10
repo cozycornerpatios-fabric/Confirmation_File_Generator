@@ -3,6 +3,25 @@ from reportlab.lib.units import inch
 from reportlab.lib.colors import black, red, blue, green
 from math import pi, cos, sin
 
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= line_height
+    return y  # return new y position
+
+
 def draw_round(c, cushion):
     page_width, page_height = letter
 
@@ -33,12 +52,17 @@ def draw_round(c, cushion):
         ("Piping", piping),
     ]
 
+    left_x = 1 * inch
+    y = page_height - 3 * inch # Adjusted initial y position for specs
+    
+
     for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
         c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        c.drawString(left_x + 120, y, value)
-        y -= 0.3 * inch
+        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows 
 
     # Draw diagram
     diagram_size = min(page_width / 2.2, page_height / 2.5)
@@ -183,7 +207,7 @@ def draw_round(c, cushion):
 #         # "bottom_width": 37,
 #         # "ear": 17.5,
 #         "fill": "Poly Fiber",
-#         "fabric": "Outdoor Canvas",
+#         "fabric": "Outdoor Canvas ",
 #         "zipper": 1,
 #         "piping": "no",
 #         "ties": "4 Ties Evenly Spaced",  # Try with "2 Same Side Short"
