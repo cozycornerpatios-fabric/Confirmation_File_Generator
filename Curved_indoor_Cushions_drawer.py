@@ -59,12 +59,19 @@ def draw_curved_cushion(c, cushion):
         ("Quantity", str(quantity)),
     ]
 
+    left_x = 1 * inch
+    y = page_height - 3 * inch # Adjusted initial y position for specs
+    
+
     for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
         c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        c.drawString(left_x + 120, y, value)
-        y -= 0.3 * inch
+        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows
+
+
 
     # diagram_size = min(page_width / 2.2, page_height / 2.5)
     # scale_factor = diagram_size / (outer_radius * 2)
@@ -425,8 +432,8 @@ def draw_curved_cushion(c, cushion):
 #     "front_width_curved": 118,
 #     "front_width_straight": 111,
 #     "thickness": 2,
-#     "fill": "High Density Foam",
-#     "fabric_collection": "Indoor Fabrics - Best Sellers",
+#     "fill": "High Density Foamllllllllllllllllllllllllllllllllllllllllllll",
+#     "fabric_collection": "Indoor Fabrics - Best Sellers ",
 #     "fabric_option": "New Royal Sr No 3 Shade 5",
 #     "zipper": "long side"
 # }
@@ -444,5 +451,3 @@ def draw_curved_cushion(c, cushion):
 #     files.download(pdf_filename)
 # except ImportError:
 #     print(f"Saved as {pdf_filename}. Not in Colab, manual download required.")
-
-
