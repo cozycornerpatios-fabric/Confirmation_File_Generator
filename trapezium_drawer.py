@@ -7,7 +7,23 @@ from reportlab.lib.units import inch
 from reportlab.lib.colors import black, red, purple, green
 
 
-
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= line_height
+    return y  # return new y position
 
 # === INPUT DATA ===
 # cushions = [
@@ -85,6 +101,8 @@ def draw_trapezium(c,cushion):
     tie_offset = cushion.get("tie_offset_from_base", 0)
     thickness_in = cushion.get('thickness', None)
     quantity = cushion.get('quantity', 1)
+    fill = cushion.get("fill", "Foam")
+    fabric = cushion.get("fabric", "Canvas")
 
     # c.setFont("Helvetica-Bold", 14)
     # c.drawString(100, 740, f"Tie Option: {ties_option}")
@@ -97,7 +115,7 @@ def draw_trapezium(c,cushion):
     y = page_height - 1 * inch
     c.setFont("Helvetica-Bold", 14)
     c.drawString(left_x, y, f"{cushion_name} (Quantity: {quantity})")
-    
+
     y -= 0.4 * inch
 
     shape = "Trapezoid"
@@ -113,18 +131,27 @@ def draw_trapezium(c,cushion):
         ("Zipper Position", zipper_position),
         ("Piping", piping),
         ("Ties", ties_option),
-        ("Quantity", str(quantity))
+        ("Quantity", str(quantity)),
+        ("Fill",fill),
+        ("Fabric",fabric)
     ]
+
+    left_x = 1 * inch
+    y = page_height - 3 * inch # Adjusted initial y position for specs
+    
 
     for label, value in specs:
         c.setFont("Helvetica-Bold", 12)
         c.drawString(left_x, y, f"{label}:")
         c.setFont("Helvetica", 12)
-        c.drawString(left_x + 130, y, value)
-        y -= 0.3 * inch
+        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows
+
+
 
     # Define printable area (letter page = 8.5 x 11 inches)
-    
+
     margin = 0.75 * inch
     usable_width = page_width - 2 * margin
     usable_height = page_height - 2 * margin
@@ -159,7 +186,7 @@ def draw_trapezium(c,cushion):
     y_origin = margin
 
 
-    
+
 
     top_left = (x_origin + (bottom_base - top_base) / 2, y_origin + height)
     top_right = (top_left[0] + top_base, top_left[1])
@@ -345,3 +372,37 @@ def draw_trapezium(c,cushion):
     )
 
     c.showPage()
+
+# if __name__ == "__main__":
+#     from reportlab.pdfgen import canvas
+#     from reportlab.lib.pagesizes import letter
+#     import os
+
+#     test_cushion = {
+#         "top_base": 114,
+#          "bottom_base": 59,
+#          "height": 26,
+#          "zipper": "ShortPlusAngled",  # Short Side, Long Side, Angled Side, ShortPlusAngled
+#          "piping": "No" , # Yes or No
+#          "ties": "4 Corner Ties", # No Ties, 2 Side Ties, 2 Back Ties, 2 Corner Ties, 4 Corner Ties,2 Top Ties
+#           "cushion_name": "Trapezoid Bay Window Cushions",
+#           "quantity" :1,
+#          "thickness": 2,
+#        "tie_offset_from_base": 3,  # Default or custom as needed,
+#         "fill": "Covers Indoor Fabrics - Best Sellers LIZZO CHERRO-LYRA-IVORY Sr. No 17",
+#          "fabric" : "Indoor Fabrics - Best Sellers Covers Indoor Fabrics - Best Sellers LIZZO CHERRO-LYRA-IVORY Sr. No 17"
+         
+
+#     }
+
+#     pdf_filename = "test_output.pdf"
+#     c = canvas.Canvas(pdf_filename, pagesize=letter)
+#     draw_trapezium(c, test_cushion)
+#     c.save()
+
+#     # Force download link for Colab
+#     try:
+#         from google.colab import files
+#         files.download(pdf_filename)
+#     except ImportError:
+#         print(f"Saved as {pdf_filename}. Not in Colab, manual download required.")
