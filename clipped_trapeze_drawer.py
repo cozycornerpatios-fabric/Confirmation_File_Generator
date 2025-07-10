@@ -51,6 +51,25 @@ def draw_clipped_trapeze(c,cushion):
     c.setFont("Helvetica-Bold", 16)
     c.drawString(1 * inch, height - 1 * inch, "CONFIRMATION - CLIPPED TRAPEZOID")
 
+
+ def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+     from reportlab.pdfbase.pdfmetrics import stringWidth
+     words = text.split()
+     line = ""
+     for word in words:
+         test_line = f"{line} {word}".strip()
+         width = stringWidth(test_line, font_name, font_size)
+         if width <= max_width:
+             line = test_line
+         else:
+             c.drawString(x, y, line)
+             y -= line_height
+             line = word
+      if line:
+          c.drawString(x, y, line)
+          y -= line_height
+      return y  # return new y position
+
     specs = [
         f"Bottom Width: {bottom_width} in",
         f"Top Width: {top_width} in",
@@ -65,11 +84,14 @@ def draw_clipped_trapeze(c,cushion):
 
     ]
 
-    y = height - 1.5 * inch
-    for s in specs:
-        c.setFont("Helvetica", 10)
-        c.drawString(1 * inch, y, s)
-        y -= 0.3 * inch
+   
+    for label, value in specs:
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(left_x, y, f"{label}:")
+        c.setFont("Helvetica", 12)
+        max_value_width = page_width - (left_x + 130 + inch)  # dynamic width limit
+        y = draw_wrapped_text(c, left_x + 130, y, value, max_width=max_value_width)
+        y -= 4  # extra spacing between spec rows
 
     # # Origin shift
     # x0 = (width - b) / 2
@@ -199,7 +221,7 @@ def draw_clipped_trapeze(c,cushion):
 
     # Dimension labels
     c.setFont("Helvetica", 8)
-    angled_len = round(((edge ** 2 + ((bottom_width - top_width) / 2) ** 2) ** 0.5), 2)
+    angled_len = round((((height_in - edge) ** 2 + ((bottom_width - top_width) / 2) ** 2) ** 0.5), 2)
     c.drawString(x0 + b / 2 - 14, y0 + 4, f"{bottom_width} in")
     c.drawString(x0 + o + t / 2 - 14, y0 + h - 9, f"{top_width} in")
     c.drawString(x0 + o/2 + o/3, y0 + e + (h - e) / 2, f"{angled_len} in")
@@ -321,9 +343,9 @@ def draw_clipped_trapeze(c,cushion):
                     draw_tie_and_label(x, y, "right")
 
 
-            elif key == "2 corner top":
-                draw_tie_and_label(x, y, "up")
             elif key == "2 corner":
+                draw_tie_and_label(x, y, "up")
+            elif key == "2 corner bottom":
                 draw_tie_and_label(x, y, "down")     
 
             elif key == "4 corner":
@@ -384,3 +406,38 @@ def draw_clipped_trapeze(c,cushion):
             z1 = verts[0][0], verts[0][1] - offset_zipper
             z2 = verts[1][0], verts[1][1] - offset_zipper
     c.showPage()
+
+# if __name__ == "__main__":
+#     from reportlab.pdfgen import canvas
+#     from reportlab.lib.pagesizes import letter
+#     import os
+
+#     test_cushion = {
+#         "bottom_width": 114,
+#         "top_width": 65,
+#         "height": 50,
+#         "zipper": "long side",#options: # "long side","short side","angle side","TopPlusAngled"
+#         "piping": "yes",#Option : "yes","no"
+#         "ties": "2 corner bottom",#Options:"2 back","2 corner","4 corner","2 side","2 corner bottom"
+#         "cushion_name": "Trapezoid Bay Window Cushions",
+#         "quantity": 1,
+#         "thickness": 2,
+#         "tie_offset_from_base": 3,
+#          "fill": "Covers Indoor Fabrics - Best Sellers LIZZO CHERRO-LYRA-IVORY Sr. No 17",
+#         "fabric" : "Indoor Fabrics - Best Sellers Covers Indoor Fabrics - Best Sellers LIZZO CHERRO-LYRA-IVORY Sr. No 17"
+         
+#     }
+
+#     pdf_filename = "test_output.pdf"
+#     c = canvas.Canvas(pdf_filename, pagesize=letter)
+#     # Call the function directly
+#     draw_clipped_trapeze(c,test_cushion)
+
+#     c.save()
+
+#     # Force download link for Colab
+#     try:
+#         from google.colab import files
+#         files.download(pdf_filename)
+#     except ImportError:
+#         print(f"Saved as {pdf_filename}. Not in Colab, manual download required.")
