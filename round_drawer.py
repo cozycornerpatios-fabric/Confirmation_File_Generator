@@ -63,7 +63,7 @@ def draw_round(c, cushion):
     c.drawCentredString(center_x, center_y + 12, f"Diameter = {diameter_in}\"")
 
     piping_margin_in = 0.5
-    piping_radius = ((diameter_in + piping_margin_in * 2) * scale_factor) / 2
+    piping_radius = (diameter_in* scale_factor) / 2 + 10
 
         # Draw piping (if applicable)
     if piping.lower() in ["yes", "piping"]:
@@ -111,7 +111,7 @@ def draw_round(c, cushion):
     "4 Ties Evenly Spaced": [pi/4, 3*pi / 4, 5*pi / 4, 7* pi / 4],
     "2 Middle Ties": [0, pi]
     }
-    
+
     tie_radius = piping_radius if piping.lower() in ["yes", "piping"] else radius
 
     if ties == "2 Back Ties":
@@ -126,10 +126,10 @@ def draw_round(c, cushion):
             y = center_y + tie_radius * sin(angle)
             draw_tie(x, y, angle)
 
-    
 
 
-    
+
+
 
     # Thickness label
     c.setFont("Helvetica", 10)
@@ -163,10 +163,9 @@ def draw_round(c, cushion):
       c.drawCentredString(label_x, label_y, "Zipper (1/3 Side)")
 
   # Determine radius for tie placement
-    
+
 
     c.showPage()
-
 
 
 # if __name__ == "__main__":
