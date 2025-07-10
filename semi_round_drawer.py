@@ -13,6 +13,8 @@ def draw_semi_round(c, cushion):
     quantity = cushion.get('quantity', 1)
     zipper_position = cushion.get('zipper', 'No')
     ties = cushion.get('ties', 'No Ties')
+    fabric = cushion.get('fabric', 'Cotton')
+    fill = cushion.get('fill', 'None')
 
 
     left_x = 1 * inch
@@ -25,6 +27,11 @@ def draw_semi_round(c, cushion):
         ("Shape", "Semi-Round"),
         ("Diameter", f"{diameter_in} inches"),
         ("Thickness", f"{thickness} inches"),
+        ("Piping", piping),
+        ("Zipper", zipper_position),
+        ("Ties", ties),
+        ("Fabric", fabric),
+        ("Fill", fill)
     ]
 
     for label, value in specs:
@@ -183,14 +190,17 @@ def draw_semi_round(c, cushion):
 #     "thickness": 10,
 #     "piping": "yes",
 #     "quantity": 1,
-#     "ties":"2 Curve Edge Ties",#Option "4 Corner Ties","2 Flat Corner Ties","2 Curve Edge Ties".
-#     "zipper_position": "Bottom Straight"  # Option: "Bottom Straight", "Top Curved"
+#     "ties":"2 Flat Corner Ties",#Option "4 Corner Ties","2 Flat Corner Ties","2 Curve Edge Ties".
+#     "zipper": "Bottom Straight",  # Option: "Bottom Straight", "Top Curved"
+#     "fabric": "Cotton",
+#     "fill": "None"
+
 # }
 
 # pdf_filename = "test_output.pdf"
 # c = canvas.Canvas(pdf_filename, pagesize=letter)
 #     # Call the function directly
-# draw_semi_round(c,test_cushion,pdf_filename)
+# draw_semi_round(c,test_cushion)
 # c.save()
 
 
