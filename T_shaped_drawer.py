@@ -285,6 +285,44 @@ def draw_t_shape(c, cushion):
 
 
     c.showPage()
+
+
+
+
+
+
+# if __name__ == "__main__":
+#     cushion_data = {
+#         "bottom_width": 57.5,
+#         "top_width": 100,
+#         "length": 85,
+#         "ear":45,
+#         "thickness": 2,
+#         "height":4,
+#         "fill": "DryFast Foam",
+#         "piping": "Yes",
+#         "ties": "4 Corner ties", #Option : "2 Corner ties bottom width","2 Corner ties top width","2 Side ties-along length","No ties","2 Corner ties","4 Corner ties"
+#         "fabric": "Stamskin F430 - 20290 Chalk Blue / Piezo Blue",
+#         "zipper": "Bottom Width",#Options: "Top Width","Bottom Width","Ear","Length"
+#         "price": "296.55 × 1 = 296.55"
+#     }
+
+#     # Define filenames
+#     pdf_filename = "t_shape_cushion.pdf"
+
+
+#     # Create a PDF canvas
+#     c = canvas.Canvas(pdf_filename, pagesize=letter)
+
+#     # Call the correctly named function
+#     pdf_file = draw_t_shape(c, cushion_data,pdf_filename)
+
+#     try:
+#         from google.colab import files
+#         files.download(pdf_filename)
+
+#     except ImportError:
+#         print(f"PDF saved as {pdf_file}")
    
 
 
