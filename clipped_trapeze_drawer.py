@@ -88,7 +88,7 @@ def draw_clipped_trapeze(c,cushion):
 
    
     left_x = 1 * inch
-    y = height - 3 * inch # Adjusted initial y position for specs
+    y = height - 1.5 * inch # Adjusted initial y position for specs
     
 
     for label, value in specs:
@@ -411,7 +411,7 @@ def draw_clipped_trapeze(c,cushion):
         else:
             z1 = verts[0][0], verts[0][1] - offset_zipper
             z2 = verts[1][0], verts[1][1] - offset_zipper
-#     c.showPage()
+    c.showPage()
 
 # if __name__ == "__main__":
 #     from reportlab.pdfgen import canvas
