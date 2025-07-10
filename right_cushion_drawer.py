@@ -11,9 +11,11 @@ def draw_right_cushion(c, cushion):
     bot_thick_in   = cushion["bottom_width"]        # large thickness at bottom
     height_in      = cushion["length"]
     thickness_in   = cushion.get("thickness")
-    zipper_pos     = cushion.get("zipper")  
+    zipper_pos     = cushion.get("zipper")
     piping         = cushion.get("piping",     "No")         # "Yes" or "No"
     qty            = cushion.get("quantity",        1)
+    fill           = cushion['fill']
+    fabric         = cushion['fabric']
 
     left_x = inch
     y      = page_h - inch
@@ -30,6 +32,8 @@ def draw_right_cushion(c, cushion):
         ("Thickness",       f"{thickness_in} in"),
         ("Zipper",          zipper_pos),
         ("Piping",          piping),
+        ("Fill",            fill),
+        ("Fabric",          fabric)
     ]
     for label, val in specs:
         c.setFont("Helvetica-Bold", 12)
@@ -135,11 +139,13 @@ def draw_right_cushion(c, cushion):
 #         "bottom_width":    50,
 #         "thickness":         20,
 #         "length":      30,
-#         "zipper":        "long side",
+#         "zipper":        "short side",
 #         "piping":        "Yes",
-#         "quantity":       1
+#         "quantity":       1,
+#         "fabric":     "Cotton",
+#         "fill":       "Silk"
 #     }
-#     draw_tapered_bolster(c, data)
+#     draw_right_cushion(c, data)
 #     c.save()
 #     try:
 #       from google.colab import files
