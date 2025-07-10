@@ -14,6 +14,8 @@ def draw_tapered_bolster(c, cushion):
     zipper_pos     = cushion.get("zipper",     "Bottom Length")  # "Top", "Bottom", "Angled"
     piping         = cushion.get("piping",     "No")         # "Yes" or "No"
     qty            = cushion.get("quantity",        1)
+    fabric         = cushion.get("fabric")
+    fill           = cushion.get("fill")
 
     left_x = inch
     y      = page_h - inch
@@ -30,6 +32,8 @@ def draw_tapered_bolster(c, cushion):
         ("Thickness",       f"{thickness_in} in"),
         ("Zipper",          zipper_pos),
         ("Piping",          piping),
+        ("Fabric",          fabric),
+        ("Fill",            fill)
     ]
     for label, val in specs:
         c.setFont("Helvetica-Bold", 12)
@@ -90,6 +94,7 @@ def draw_tapered_bolster(c, cushion):
     ])
 
     # ─── Dimension labels ───
+    c.setFillColor(black)
     c.setFont("Helvetica", 10)
     # bottom thickness
     c.drawString((bl[0]+br[0])/2 - 5, bl[1] + 10, f"{bot_thick_in} in")
@@ -100,8 +105,7 @@ def draw_tapered_bolster(c, cushion):
 
     # ─── Thickness callout ───
     c.setFont("Helvetica", 10)
-    c.setFillColor(black)
-    c.drawString((tl[0] + tr[0] - 10)/2,tr[1] + 15, f"Thickness: {thickness_in} in")
+    c.drawString(tr[0]+piping_margin + 100,tr[1], f"Thickness: {thickness_in} in")
     c.setFillColor(black)
 
     # ─── Zipper ───
@@ -122,13 +126,15 @@ def draw_tapered_bolster(c, cushion):
 #     pdf_filename = "tapered_bolster.pdf"
 #     data = {
 #         "cushion_name": "Tapered Bolster",
-#         "top_thickness":       2,
-#         "bottom_thickness":    5,
-#         "height":         23,
+#         "top_thickness":       10,
+#         "bottom_thickness":    12,
+#         "height":         113,
 #         "length":      3,
 #         "zipper":        "Angled",
 #         "piping":        "Yes",
-#         "quantity":       1
+#         "quantity":       1,
+#         "fabric":        "Cotton",
+#         "fill":          "Silk"
 #     }
 #     draw_tapered_bolster(c, data)
 #     c.save()
