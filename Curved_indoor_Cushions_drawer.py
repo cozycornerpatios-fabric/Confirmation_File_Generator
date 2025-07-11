@@ -4,6 +4,24 @@ from reportlab.lib.units import inch
 from reportlab.lib.colors import black, blue, red, green
 from math import pi, cos, sin
 
+def draw_wrapped_text(c, x, y, text, max_width, font_name="Helvetica", font_size=12, line_height=14):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = stringWidth(test_line, font_name, font_size)
+        if width <= max_width:
+            line = test_line
+        else:
+            c.drawString(x, y, line)
+            y -= line_height
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= line_height
+    return y  # return new y position
+
 def draw_curved_cushion(c, cushion):
     page_width, page_height = letter
 
@@ -430,7 +448,7 @@ def draw_curved_cushion(c, cushion):
 #     "back_width_curved": 138.75,
 #     "back_width_straight": 129,
 #     "front_width_curved": 118,
-#     "front_width_straight": 111,
+#     "front_width_straight": 500,
 #     "thickness": 2,
 #     "fill": "High Density Foamllllllllllllllllllllllllllllllllllllllllllll",
 #     "fabric_collection": "Indoor Fabrics - Best Sellers ",
