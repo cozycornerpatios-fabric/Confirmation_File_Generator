@@ -15,6 +15,8 @@ from right_triangle_drawer import draw_right_triangle
 from Curved_indoor_Cushions_drawer import draw_curved_cushion
 from right_cushion_drawer import draw_right_cushion
 from tapered_bolster_drawer import draw_tapered_bolster
+from counter_utils import increment_counter
+
 
 
 
@@ -23,6 +25,10 @@ PDF_DIR = os.path.join(os.getcwd(), "pdfs")
 os.makedirs(PDF_DIR, exist_ok=True)
 
 @app.route('/generate-confirmation', methods=['POST'])
+# Count API calls
+api_call_number = increment_counter()
+print(f"API call count: {api_call_number}")
+
 def generate_confirmation():
     try:
         data = request.get_json(force=True)
