@@ -25,12 +25,13 @@ PDF_DIR = os.path.join(os.getcwd(), "pdfs")
 os.makedirs(PDF_DIR, exist_ok=True)
 
 @app.route('/generate-confirmation', methods=['POST'])
-# Count API calls
-api_call_number = increment_counter()
-print(f"API call count: {api_call_number}")
+
 
 def generate_confirmation():
     try:
+        # Count API calls
+        api_call_number = increment_counter()
+        print(f"API call count: {api_call_number}")
         data = request.get_json(force=True)
 
         customer_name = data['customer_name']
