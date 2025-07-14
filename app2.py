@@ -16,6 +16,7 @@ from Curved_indoor_Cushions_drawer import draw_curved_cushion
 from right_cushion_drawer import draw_right_cushion
 from tapered_bolster_drawer import draw_tapered_bolster
 from counter_utils import increment_counter
+from left_cushion_drawer import draw_left_cushion
 
 
 
@@ -95,7 +96,11 @@ def generate_confirmation():
             elif all(cushion.get(k, 0) > 0 for k in ("side", "thickness")):
                 draw_equilateral_triangle(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "length")):
-                draw_right_cushion(c,cushion)
+                name = cushion.get("cushion_name", "").lower()
+                if "left" in name:
+                    draw_left_cushion(c, cushion)
+                else : 
+                    draw_right_cushion(c,cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "height","edge")):
                 draw_clipped_trapeze(c,cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
