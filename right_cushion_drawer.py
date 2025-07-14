@@ -67,8 +67,8 @@ def draw_right_cushion(c, cushion):
 
     # ─── Compute scale & corners ───
     margin = 0.75 * inch
-    usable_w = page_w - 2*margin
-    usable_h = y - margin
+    usable_w = 0.5*page_w - 2*margin
+    usable_h = 0.5*y - margin
     scale = min(usable_w / max(bot_thick_in, top_thick_in),
                 usable_h / height_in)
 
@@ -137,16 +137,16 @@ def draw_right_cushion(c, cushion):
         c.setFillColor(red)
         c.setStrokeColor(red)
         c.setLineWidth(1.2)
-        c.line(tl[0]-4*piping_margin, tl[1], bl[0] -4*piping_margin, bl[1])
-        c.drawString(bl[0] - 10*piping_margin, (bl[1] + tl[1])/2, "Zipper")
+        c.line(tl[0]-10, tl[1], bl[0] -10, bl[1])
+        c.drawString(bl[0] - 40, (bl[1] + tl[1])/2, "Zipper")
 
     elif(zipper_pos.lower() == "long side"):
         c.setFont("Helvetica", 10)
         c.setFillColor(red)
         c.setStrokeColor(red)
         c.setLineWidth(1.2)
-        c.line(bl[0], bl[1]-5*piping_margin, br[0], br[1]-5*piping_margin)
-        c.drawString((bl[0]+br[0])/2 - 10, bl[1] - 7*piping_margin, "Zipper")
+        c.line(bl[0], bl[1]-10, br[0], br[1]-10)
+        c.drawString((bl[0]+br[0])/2 - 10, bl[1] - 20, "Zipper")
 
     c.showPage()
 
@@ -162,7 +162,7 @@ def draw_right_cushion(c, cushion):
 #         "bottom_width":    50,
 #         "thickness":         20,
 #         "length":      30,
-#         "zipper":        "short side",
+#         "zipper":        "long side",
 #         "piping":        "Yes",
 #         "quantity":       1,
 #         "fabric":     "Cotton",
