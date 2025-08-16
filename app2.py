@@ -26,14 +26,17 @@ PDF_DIR = os.path.join(os.getcwd(), "pdfs")
 os.makedirs(PDF_DIR, exist_ok=True)
 
 @app.route('/generate-confirmation', methods=['POST'])
-
-
 def generate_confirmation():
     try:
+        print(f"Received request to /generate-confirmation")
         # Count API calls
         api_call_number = increment_counter()
         print(f"API call count: {api_call_number}")
+        
+        # Log request data for debugging
+        print(f"Request headers: {dict(request.headers)}")
         data = request.get_json(force=True)
+        print(f"Request data received: {data}")
 
         customer_name = data['customer_name']
         order_id = data['order_id']
@@ -75,11 +78,15 @@ def generate_confirmation():
             y_left -= 0.25 * inch
         c.showPage()
 
-        for cushion in cushions:
+        print(f"Processing {len(cushions)} cushions...")
+        for i, cushion in enumerate(cushions):
+            print(f"Processing cushion {i+1}: {cushion.get('cushion_name', 'Unnamed')}")
             if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
                 if cushion.get("top_width") > cushion.get("bottom_width"):
+                    print(f"  Drawing T-shape cushion")
                     draw_t_shape(c, cushion)
                 else:
+                    print(f"  Drawing L-shape cushion")
                     draw_l_shape(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("diameter", "thickness")):
                 name = cushion.get("cushion_name", "").lower()
@@ -118,7 +125,10 @@ def generate_confirmation():
 
 
         c.save()
-        return jsonify({"pdf_link": url_for('serve_pdf', filename=filename, _external=True)})
+        pdf_url = url_for('serve_pdf', filename=filename, _external=True)
+        print(f"PDF generated successfully: {filename}")
+        print(f"PDF URL: {pdf_url}")
+        return jsonify({"pdf_link": pdf_url})
 
     except Exception as e:
         import sys
