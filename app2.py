@@ -21,6 +21,23 @@ from left_cushion_drawer import draw_left_cushion
 from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
+import time, sys
+
+BUILD_TS = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+print(f"[BOOT] app2.py loaded @ {BUILD_TS}", file=sys.stdout, flush=True)
+
+@app.route('/__routes', methods=['GET'])
+def __routes():
+    rules = sorted([f"{sorted(list(r.methods))} {r.rule}" for r in app.url_map.iter_rules()])
+    return jsonify({"routes": rules, "build_ts": BUILD_TS}), 200
+
+@app.route('/version', methods=['GET'])
+def version():
+    return jsonify({
+        "build_ts": BUILD_TS,
+        "note": "generate-confirmation returns 200"
+    }), 200
+
 app.url_map.strict_slashes = False 
 
 # Where PDFs are stored
