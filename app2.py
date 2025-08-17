@@ -2,6 +2,10 @@ from flask import Flask, request, jsonify, send_from_directory, url_for, render_
 from reportlab.lib.pagesizes import letter
 import os
 import uuid
+import time, sys
+from concurrent.futures import ThreadPoolExecutor
+
+# --- drawing imports (your existing modules)
 from rectangle_drawer import draw_rectangle
 from trapezium_drawer import draw_trapezium
 from L_shaped_drawer import draw_l_shape
@@ -9,7 +13,7 @@ from clipped_trapeze_drawer import draw_clipped_trapeze
 from T_shaped_drawer import draw_t_shape
 from round_drawer import draw_round
 from E_triangle_drawer import draw_equilateral_triangle
-from curved_drawer import draw_curved 
+from curved_drawer import draw_curved
 from semi_round_drawer import draw_semi_round
 from right_triangle_drawer import draw_right_triangle
 from Curved_indoor_Cushions_drawer import draw_curved_cushion
@@ -17,15 +21,24 @@ from right_cushion_drawer import draw_right_cushion
 from tapered_bolster_drawer import draw_tapered_bolster
 from left_cushion_drawer import draw_left_cushion
 
-# NEW: background execution + job store
-from concurrent.futures import ThreadPoolExecutor
-
 app = Flask(__name__)
-import time, sys
 
+# Boot banner + version
 BUILD_TS = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 print(f"[BOOT] app2.py loaded @ {BUILD_TS}", file=sys.stdout, flush=True)
 
+# Accept both with/without trailing slash
+app.url_map.strict_slashes = False
+
+# Where PDFs are stored
+PDF_DIR = os.path.join(os.getcwd(), "pdfs")
+os.makedirs(PDF_DIR, exist_ok=True)
+
+# Background pool and in-memory job store (swap for Redis if you want durability)
+EXECUTOR = ThreadPoolExecutor(max_workers=4)
+JOBS = {}  # job_id -> {"status": "queued|running|done|error", "pdf_link": str, "error": str}
+
+# --------- Utility/debug routes ----------
 @app.route('/__routes', methods=['GET'])
 def __routes():
     rules = sorted([f"{sorted(list(r.methods))} {r.rule}" for r in app.url_map.iter_rules()])
@@ -33,25 +46,14 @@ def __routes():
 
 @app.route('/version', methods=['GET'])
 def version():
-    return jsonify({
-        "build_ts": BUILD_TS,
-        "note": "generate-confirmation returns 200"
-    }), 200
+    return jsonify({"build_ts": BUILD_TS, "note": "generate-confirmation returns 200"}), 200
 
-app.url_map.strict_slashes = False 
-
-# Where PDFs are stored
-PDF_DIR = os.path.join(os.getcwd(), "pdfs")
-os.makedirs(PDF_DIR, exist_ok=True)
-
-# Background pool and in-memory job store (swap with Redis for durability)
-EXECUTOR = ThreadPoolExecutor(max_workers=4)
-JOBS = {}  # {job_id: {"status": "queued|running|done|error", "pdf_link": str, "error": str}}
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"ok": True}), 200
 
 @app.route('/', methods=['GET', 'HEAD'])
 def health_or_index():
-    """Keep your old index, serve a basic health too."""
-    # If you have a form.html, keep rendering it on GET
     if request.method == 'GET' and os.path.exists('form.html'):
         return render_template_string(open('form.html').read())
     return 'ok', 200
@@ -60,11 +62,7 @@ def health_or_index():
 def serve_pdf(filename):
     return send_from_directory(PDF_DIR, filename)
 
-@app.route('/ping', methods=['GET'])
-def ping():
-    return jsonify({"ok": True}), 200
-
-# -------------------- BACKGROUND WORKER --------------------
+# --------- Background worker ----------
 def build_pdf(job_id: str, payload: dict, base_url: str):
     """Heavy PDF generation executed in a background thread."""
     JOBS[job_id]["status"] = "running"
@@ -110,9 +108,8 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
             y_left -= 0.25 * inch
         c.showPage()
 
-        # Cushion pages (unchanged logic)
+        # Cushion pages (your existing branching)
         for i, cushion in enumerate(cushions):
-            # Branching based on provided dimensions
             if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
                 if cushion.get("top_width") > cushion.get("bottom_width"):
                     draw_t_shape(c, cushion)
@@ -129,7 +126,6 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
             elif all(cushion.get(k, 0) > 0 for k in ("top_thickness", "bottom_thickness", "height", "length")):
                 draw_tapered_bolster(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("width", "side_length", "middle_length")):
-                # Note: 'middle_length' must be present in payload if you rely on this branch
                 draw_curved(c, cushion)
             elif all(cushion.get(k, 0) > 0 for k in ("side", "thickness")):
                 draw_equilateral_triangle(c, cushion)
@@ -154,7 +150,6 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
 
         c.save()
 
-        # Build public link (avoid url_for in background threads)
         base = base_url.rstrip('/')  # e.g., https://confirmation-file.onrender.com
         pdf_link = f"{base}/pdfs/{filename}"
         JOBS[job_id].update(status="done", pdf_link=pdf_link)
@@ -162,35 +157,27 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
     except Exception as e:
         JOBS[job_id].update(status="error", error=str(e))
 
-# -------------------- API ENDPOINTS --------------------
+# --------- API endpoints ----------
 @app.route('/generate-confirmation', methods=['POST'])
 def generate_confirmation():
     try:
-        print("Received request to /generate-confirmation")
-        
-        # Parse JSON
         data = request.get_json(force=True)
-        print(f"Request data received: {data}")
 
-        # Minimal validation (keep/exted as needed)
         required = ["customer_name", "order_id", "email", "shipping_address", "billing_address", "cushions"]
         missing = [k for k in required if k not in data]
         if missing:
             return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
 
-        # Create a job and run in background
         job_id = uuid.uuid4().hex
         JOBS[job_id] = {"status": "queued"}
 
-        # Capture base URL now (request context won't exist later)
         base_url = request.url_root
         EXECUTOR.submit(build_pdf, job_id, data, base_url)
 
-        # Return immediately to avoid GPT hang
+        # immediate return keeps Actions client responsive
         return jsonify({"job_id": job_id, "status": "queued"}), 200
 
     except Exception as e:
-        import sys
         print("ERROR:", e, file=sys.stderr)
         return jsonify({"error": str(e)}), 500
 
@@ -206,10 +193,37 @@ def status(job_id):
         resp["error"] = job["error"]
     return jsonify(resp), 200
 
-# Keep the legacy index route if you want a form
-# (Handled by health_or_index above)
+# --- NEW: smaller, faster status (matches schema getStatusLite)
+@app.route('/status-lite/<job_id>', methods=['GET'])
+def status_lite(job_id):
+    job = JOBS.get(job_id)
+    if not job:
+        return jsonify({"status": "not_found"}), 404
+    st = job.get("status", "queued")
+    if st == "done":
+        return jsonify({"status": "done", "pdf_link": job.get("pdf_link")}), 200
+    if st == "error":
+        return jsonify({"status": "error", "error": job.get("error")}), 200
+    return jsonify({"status": st}), 200
+
+# --- NEW: short wait to reduce polling (matches schema awaitJob)
+@app.route('/await/<job_id>', methods=['GET'])
+def await_job(job_id):
+    t0 = time.time()
+    while time.time() - t0 < 8:  # wait up to ~8 seconds
+        job = JOBS.get(job_id)
+        if not job:
+            return jsonify({"status": "not_found"}), 404
+        st = job.get("status")
+        if st in ("done", "error"):
+            resp = {"status": st}
+            if "pdf_link" in job: resp["pdf_link"] = job["pdf_link"]
+            if "error" in job: resp["error"] = job["error"]
+            return jsonify(resp), 200
+        time.sleep(0.5)
+    # still running after short wait
+    return jsonify({"status": JOBS.get(job_id, {}).get("status", "queued")}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
-    # For local testing only. In Render, use Gunicorn (see Start Command).
     app.run(debug=True, host='0.0.0.0', port=port)
