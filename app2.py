@@ -21,6 +21,7 @@ from left_cushion_drawer import draw_left_cushion
 from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False 
 
 # Where PDFs are stored
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
@@ -169,7 +170,7 @@ def generate_confirmation():
         EXECUTOR.submit(build_pdf, job_id, data, base_url)
 
         # Return immediately to avoid GPT hang
-        return jsonify({"job_id": job_id, "status": "queued"}), 202
+        return jsonify({"job_id": job_id, "status": "queued"}), 200
 
     except Exception as e:
         import sys
