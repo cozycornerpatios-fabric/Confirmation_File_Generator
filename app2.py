@@ -15,15 +15,12 @@ from right_triangle_drawer import draw_right_triangle
 from Curved_indoor_Cushions_drawer import draw_curved_cushion
 from right_cushion_drawer import draw_right_cushion
 from tapered_bolster_drawer import draw_tapered_bolster
-from counter_utils import increment_counter
 from left_cushion_drawer import draw_left_cushion
 
 # NEW: background execution + job store
 from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
-app.url_map.strict_slashes = False
-
 
 # Where PDFs are stored
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
@@ -44,6 +41,10 @@ def health_or_index():
 @app.route('/pdfs/<filename>')
 def serve_pdf(filename):
     return send_from_directory(PDF_DIR, filename)
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"ok": True}), 200
 
 # -------------------- BACKGROUND WORKER --------------------
 def build_pdf(job_id: str, payload: dict, base_url: str):
@@ -148,10 +149,7 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
 def generate_confirmation():
     try:
         print("Received request to /generate-confirmation")
-        # Count API calls
-        api_call_number = increment_counter()
-        print(f"API call count: {api_call_number}")
-
+        
         # Parse JSON
         data = request.get_json(force=True)
         print(f"Request data received: {data}")
@@ -171,7 +169,7 @@ def generate_confirmation():
         EXECUTOR.submit(build_pdf, job_id, data, base_url)
 
         # Return immediately to avoid GPT hang
-        return jsonify({"job_id": job_id, "status": "queued"}), 200
+        return jsonify({"job_id": job_id, "status": "queued"}), 202
 
     except Exception as e:
         import sys
