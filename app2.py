@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify, send_from_directory, url_for, render_template_string
-from reportlab.lib.pagesizes import letter
 import os
 import uuid
 import time, sys
 from concurrent.futures import ThreadPoolExecutor
+
+# --- FAST ReportLab imports at module load (avoid per-job import cost)
+from reportlab.pdfgen import canvas as rl_canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
 
 # --- drawing imports (your existing modules)
 from rectangle_drawer import draw_rectangle
@@ -30,9 +34,13 @@ print(f"[BOOT] app2.py loaded @ {BUILD_TS}", file=sys.stdout, flush=True)
 # Accept both with/without trailing slash
 app.url_map.strict_slashes = False
 
-# Where PDFs are stored
-PDF_DIR = os.path.join(os.getcwd(), "pdfs")
+# Where PDFs are stored (use /tmp for faster I/O on Render)
+PDF_DIR = "/tmp/pdfs"
 os.makedirs(PDF_DIR, exist_ok=True)
+
+def _new_canvas(filepath: str):
+    # Enable PDF compression for smaller/faster output
+    return rl_canvas.Canvas(filepath, pagesize=letter, pageCompression=1)
 
 # Background pool and in-memory job store (swap for Redis if you want durability)
 EXECUTOR = ThreadPoolExecutor(max_workers=4)
@@ -78,9 +86,7 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
         filename = f"confirmation_{uuid.uuid4().hex}.pdf"
         filepath = os.path.join(PDF_DIR, filename)
 
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.units import inch
-        c = canvas.Canvas(filepath, pagesize=letter)
+        c = _new_canvas(filepath)
         page_width, page_height = letter
 
         # Page 1 - Customer Info
@@ -157,7 +163,55 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
     except Exception as e:
         JOBS[job_id].update(status="error", error=str(e))
 
-# --------- API endpoints ----------
+# --------- SYNC fast-path endpoint (instant PDF for simple single cushion) ----------
+@app.route('/generate-confirmation-sync', methods=['POST'])
+def generate_confirmation_sync():
+    data = request.get_json(force=True)
+
+    # Basic validation
+    required = ["customer_name","order_id","email","shipping_address","billing_address","cushions"]
+    missing = [k for k in required if k not in data]
+    if missing:
+        return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
+
+    cushions = data.get("cushions", [])
+    if len(cushions) != 1:
+        return jsonify({"error": "sync endpoint supports exactly 1 cushion"}), 400
+
+    cz = cushions[0]
+    shape = (cz.get("shape") or "").lower()
+    is_rect = shape == "rectangle" and all(cz.get(k,0)>0 for k in ("length","width","thickness"))
+    is_round = shape == "round" and all(cz.get(k,0)>0 for k in ("diameter","thickness"))
+    if not (is_rect or is_round):
+        return jsonify({"error":"sync only supports rectangle or round cushions with numeric dimensions"}), 400
+
+    # Generate PDF inline (fast path)
+    filename = f"confirmation_{uuid.uuid4().hex}.pdf"
+    filepath = os.path.join(PDF_DIR, filename)
+    c = _new_canvas(filepath)
+    page_width, page_height = letter
+
+    # Header + customer info
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(72, page_height-72, "ORDER CONFIRMATION (FAST)")
+    c.setFont("Helvetica", 11)
+    y = page_height - 100
+    for label, val in [("Customer",data["customer_name"]),("Order",data["order_id"]),("Email",data["email"])]:
+        c.drawString(72, y, f"{label}: {val}")
+        y -= 16
+
+    # One cushion page
+    c.showPage()
+    if is_rect:
+        draw_rectangle(c, cz)
+    else:
+        draw_round(c, cz)
+
+    c.save()
+    base = request.url_root.rstrip('/')
+    return jsonify({"pdf_link": f"{base}/pdfs/{filename}", "mode": "sync"}), 200
+
+# --------- API endpoints (async flow) ----------
 @app.route('/generate-confirmation', methods=['POST'])
 def generate_confirmation():
     try:
@@ -193,7 +247,7 @@ def status(job_id):
         resp["error"] = job["error"]
     return jsonify(resp), 200
 
-# --- NEW: smaller, faster status (matches schema getStatusLite)
+# --- smaller, faster status (matches schema getStatusLite)
 @app.route('/status-lite/<job_id>', methods=['GET'])
 def status_lite(job_id):
     job = JOBS.get(job_id)
@@ -206,7 +260,7 @@ def status_lite(job_id):
         return jsonify({"status": "error", "error": job.get("error")}), 200
     return jsonify({"status": st}), 200
 
-# --- NEW: short wait to reduce polling (matches schema awaitJob)
+# --- short wait to reduce polling (matches schema awaitJob)
 @app.route('/await/<job_id>', methods=['GET'])
 def await_job(job_id):
     t0 = time.time()
