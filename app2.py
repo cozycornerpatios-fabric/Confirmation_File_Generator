@@ -21,7 +21,7 @@ from left_cushion_drawer import draw_left_cushion
 
 
 
-app = Flask(_name_)
+app = Flask(__name__)
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
 os.makedirs(PDF_DIR, exist_ok=True)
 
@@ -143,6 +143,6 @@ def serve_pdf(filename):
 def index():
     return render_template_string(open("form.html").read())
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(debug=True, host='0.0.0.0', port=port)
