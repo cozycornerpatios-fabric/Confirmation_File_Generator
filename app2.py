@@ -308,10 +308,13 @@ def generate_confirmation():
                     # Scale to fit the diagram region on the right side
                     s_local = min(diagram_w_target / visible_w, slot_h / visible_h)
 
-                    # Place diagram flush against the text column with small gutter
+                    # Place diagram flush against the text column with a small gutter,
+                    # top-aligned to the slot so it stays parallel with details.
                     right_x0 = margin_x + text_w + gutter_x
                     tx = right_x0 - s_local * left_trim
-                    ty = slot_origins_y[si] + (slot_h - s_local * visible_h) / 2 - s_local * bottom_trim
+                    top_pad = 0.10 * 72  # ~0.10 inch
+                    slot_top_y = slot_origins_y[si] + slot_h
+                    ty = slot_top_y - top_pad - (s_local * visible_h) - s_local * bottom_trim
 
                     t = Transformation().scale(s_local).translate(tx, ty)
                     new_page.merge_transformed_page(src_page, t)
