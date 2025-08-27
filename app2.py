@@ -137,8 +137,8 @@ def generate_confirmation():
 
             # Adaptive N-up (try 3-up to reduce whitespace, else 2-up)
             W, H = letter
-            margin_x = 0.35 * 72  # ~0.35 inch
-            margin_y = 0.35 * 72
+            margin_x = 0.20 * 72  # ~0.20 inch for larger content
+            margin_y = 0.20 * 72
 
             def compute_scale(slots):
                 sx = (W - 2 * margin_x) / W
@@ -146,7 +146,8 @@ def generate_confirmation():
                 return min(sx, sy)
 
             s3 = compute_scale(3)
-            slots_per_page = 3 if s3 >= 0.31 else 2
+            # Prefer 2-up unless 3-up still yields large-enough scale
+            slots_per_page = 3 if s3 >= 0.50 else 2
             s = compute_scale(slots_per_page)
             tx = (W - s * W) / 2
 
