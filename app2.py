@@ -284,8 +284,9 @@ def generate_confirmation():
                     shape_lbl = _derive_shape_label(current_cushion)
 
                     if shape_lbl == "Trapezoid":
+                        # Keep more room on the right so thickness callouts are not clipped
                         left_trim   = 1.10 * 72
-                        right_trim  = 1.10 * 72
+                        right_trim  = 0.70 * 72
                         bottom_trim = 0.25 * 72
                         top_trim    = H * 0.60
                     else:
@@ -313,7 +314,17 @@ def generate_confirmation():
                     tx = right_x0 - s_local * left_trim
                     top_pad = 0.10 * 72  # ~0.10 inch
                     slot_top_y = slots_top_y[si]
-                    ty = slot_top_y - top_pad - (s_local * visible_h) - s_local * bottom_trim
+                    # Inner safety padding to ensure labels like thickness don’t touch slot edges
+                    inner_pad_top = 0.06 * 72
+                    inner_pad_bottom = 0.06 * 72
+                    ty = (
+                        slot_top_y
+                        - top_pad
+                        - inner_pad_top
+                        - (s_local * visible_h)
+                        - s_local * bottom_trim
+                        + inner_pad_bottom
+                    )
 
                     t = Transformation().scale(s_local).translate(tx, ty)
                     new_page.merge_transformed_page(src_page, t)
