@@ -206,13 +206,20 @@ def generate_confirmation():
             cushion_pages = reader.pages[1:]
             num_pairs = (len(cushions) + 1) // 2
             for pair_index in range(num_pairs):
-                # top cushion specs
+                # Page header
+                header_y = H - top_margin
+                bc.setFont("Helvetica-Bold", 24)
+                bc.drawString(left_margin, header_y, "Item Details")
+
+                # top cushion specs (under header)
                 top_idx = pair_index * 2
-                draw_specs_block(bc, cushions[top_idx], H - top_margin - 0.2 * inch)
-                # bottom cushion specs
-                bottom_origin_y = bottom_margin + half_height - 0.2 * inch
+                top_specs_y = header_y - 0.45 * inch
+                draw_specs_block(bc, cushions[top_idx], top_specs_y)
+
+                # bottom cushion specs (start at top of bottom half)
+                bottom_specs_y = bottom_margin + half_height - 0.25 * inch
                 if top_idx + 1 < len(cushions):
-                    draw_specs_block(bc, cushions[top_idx + 1], bottom_origin_y + half_height)
+                    draw_specs_block(bc, cushions[top_idx + 1], bottom_specs_y)
                 bc.showPage()
             bc.save()
 
