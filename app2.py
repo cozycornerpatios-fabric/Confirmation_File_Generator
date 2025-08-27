@@ -145,16 +145,15 @@ def generate_confirmation():
                 sy = ((H - 2 * margin_y) / slots) / H
                 return min(sx, sy)
 
-            s3 = compute_scale(3)
-            # Prefer 2-up unless 3-up still yields large-enough scale
-            slots_per_page = 3 if s3 >= 0.50 else 2
+            # Force two cushions per page so each new cushion starts at page top.
+            slots_per_page = 2
 
             # Slot dimensions (target area for each cushion diagram)
             slot_w = W - 2 * margin_x
             slot_h = (H - 2 * margin_y) / slots_per_page
 
-            # Precompute vertical origins for slots (bottom-up)
-            slot_origins_y = [margin_y + i * slot_h for i in range(slots_per_page)]
+            # Precompute slot top edges (top-down order) so first cushion starts at page top
+            slots_top_y = [H - margin_y - i * slot_h for i in range(slots_per_page)]
 
             # Layout: specs on left, diagram on right with a small gutter so they are close
             text_ratio = 0.33
@@ -261,8 +260,8 @@ def generate_confirmation():
                     idx = p * slots_per_page + si
                     if idx >= total:
                         break
-                    # Top y for this slot
-                    slot_top_y = slot_origins_y[si] + slot_h
+                    # Top y for this slot (top-down)
+                    slot_top_y = slots_top_y[si]
                     draw_specs_block(bc, cushions[idx], slot_top_y)
                 bc.showPage()
             bc.save()
@@ -313,7 +312,7 @@ def generate_confirmation():
                     right_x0 = margin_x + text_w + gutter_x
                     tx = right_x0 - s_local * left_trim
                     top_pad = 0.10 * 72  # ~0.10 inch
-                    slot_top_y = slot_origins_y[si] + slot_h
+                    slot_top_y = slots_top_y[si]
                     ty = slot_top_y - top_pad - (s_local * visible_h) - s_local * bottom_trim
 
                     t = Transformation().scale(s_local).translate(tx, ty)
