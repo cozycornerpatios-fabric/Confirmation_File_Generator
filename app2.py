@@ -180,7 +180,16 @@ def generate_confirmation():
                     pass
                 return None
 
-            # Thickness label is handled inside shape drawers; no extra label drawn here
+            def _thickness_value(cushion):
+                # Try common keys for thickness across shapes
+                for key in ("thickness", "thickness_in", "top_thickness", "bottom_thickness"):
+                    if key in cushion and cushion[key] not in (None, ""):
+                        try:
+                            val = float(cushion[key])
+                            return f"{val:g}\""
+                        except Exception:
+                            return str(cushion[key])
+                return None
 
             def draw_specs_block(cnv, cushion, slot_top_y):
                 x = margin_x
@@ -266,7 +275,20 @@ def generate_confirmation():
                     slot_top_y = slots_top_y[si]
                     draw_specs_block(bc, cushions[idx], slot_top_y)
 
-                    # No extra thickness label here to avoid duplication with diagram
+                    # Single thickness label on the LEFT of diagram so it's always labeled
+                    t_val = _thickness_value(cushions[idx])
+                    if t_val:
+                        cnv = bc
+                        cnv.setFont("Helvetica", 10)
+                        cnv.setFillColorRGB(0, 0, 0)
+                        right_x0 = margin_x + text_w + gutter_x
+                        from reportlab.pdfbase.pdfmetrics import stringWidth
+                        label_text = f"Thickness = {t_val}"
+                        label_w = stringWidth(label_text, "Helvetica", 10)
+                        gap = 0.06 * 72
+                        x_label = right_x0 - gap - label_w
+                        y_label = slot_top_y - (slot_h / 2)
+                        cnv.drawString(x_label, y_label, label_text)
                 bc.showPage()
             bc.save()
 
