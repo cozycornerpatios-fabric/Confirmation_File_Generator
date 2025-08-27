@@ -279,12 +279,13 @@ def generate_confirmation():
                         break
                     src_page = cushion_pages[pi]
 
-                    # Trim constant margins from source to remove drawer whitespace
-                    trim_in = 0.55
-                    left_trim   = trim_in * 72
-                    right_trim  = trim_in * 72
-                    top_trim    = trim_in * 72
-                    bottom_trim = trim_in * 72
+                    # Trim source page to remove the drawer's own header/specs,
+                    # keeping only the diagram area (bottom ~55% of the page)
+                    side_trim_in = 0.40
+                    left_trim   = side_trim_in * 72
+                    right_trim  = side_trim_in * 72
+                    bottom_trim = side_trim_in * 72
+                    top_trim    = H * 0.45  # remove upper portion where specs live
 
                     try:
                         src_page.cropbox.lower_left  = (left_trim, bottom_trim)
