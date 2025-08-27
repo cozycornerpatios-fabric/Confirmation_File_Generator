@@ -311,7 +311,7 @@ def generate_confirmation():
                     # top-aligned to the slot so it stays parallel with details.
                     right_x0 = margin_x + text_w + gutter_x
                     tx = right_x0 - s_local * left_trim
-                    top_pad = 0.10 * 72  # ~0.10 inch
+                    top_pad = 0.35 * 72  # increase top padding so diagram starts a bit lower
                     slot_top_y = slots_top_y[si]
                     ty = slot_top_y - top_pad - (s_local * visible_h) - s_local * bottom_trim
 
