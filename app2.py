@@ -286,7 +286,7 @@ def generate_confirmation():
                         # position label just to the right of the diagram region, vertically centered in the slot
                         x_label = right_x0 + diagram_w_target + 0.06 * 72
                         y_label = slot_top_y - (slot_h / 2)
-                        cnv.drawString(x_label, y_label, f"Thickness: {t_val}")
+                        cnv.drawString(x_label, y_label, f"Thickness = {t_val}")
                 bc.showPage()
             bc.save()
 
