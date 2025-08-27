@@ -217,7 +217,14 @@ def build_pdf(job_id: str, payload: dict, base_url: str):
             cnv.scale(DIAGRAM_SCALE, DIAGRAM_SCALE)
 
             # Let your existing router draw relative to the new origin
-            shape_router(cnv, cushion)
+            # Some legacy drawers call showPage(), which would break two-per-page layout.
+            # Temporarily disable showPage during embedded drawing.
+            original_show_page = cnv.showPage
+            try:
+                cnv.showPage = lambda *args, **kwargs: None
+                shape_router(cnv, cushion)
+            finally:
+                cnv.showPage = original_show_page
             cnv.restoreState()
 
             # Optional: a faint separator line between sections
