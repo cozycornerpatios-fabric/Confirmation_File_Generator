@@ -156,8 +156,8 @@ def generate_confirmation():
             slots_top_y = [H - margin_y - i * slot_h for i in range(slots_per_page)]
 
             # Layout: specs on left, diagram on right with a small gutter so they are close
-            text_ratio = 0.33
-            gutter_x = 0.12 * 72  # ~0.12 inch gap to avoid touching details
+            text_ratio = 0.28
+            gutter_x = 0.18 * 72  # wider gap to keep text out of diagram
             text_w = slot_w * text_ratio
             diagram_w_target = slot_w - text_w - gutter_x
 
@@ -193,6 +193,47 @@ def generate_confirmation():
                         except Exception:
                             return str(cushion[key])
                 return None
+
+            def _draw_wrapped_kv(cnv, x, y, label, value, max_width):
+                from reportlab.pdfbase.pdfmetrics import stringWidth
+                label_text = f"{label} : "
+                font_label = ("Helvetica-Bold", 12)
+                font_value = ("Helvetica", 12)
+                line_height = 0.20 * 72
+
+                # Measure label width
+                label_w = stringWidth(label_text, font_label[0], font_label[1])
+                value_w_max = max_width - label_w
+
+                # Split value into words and wrap
+                words = str(value).split()
+                line = ""
+
+                cnv.setFont(*font_label)
+                cnv.drawString(x, y, label_text)
+                cnv.setFont(*font_value)
+
+                def draw_value_line(text, yy):
+                    # Constrain text within left column by setting a clipping rect
+                    cnv.saveState()
+                    cnv.rect(x, yy - line_height + 4, text_w, line_height + 8, stroke=0, fill=0)
+                    cnv.clipPath()
+                    cnv.drawString(x + label_w, yy, text)
+                    cnv.restoreState()
+
+                for word in words:
+                    test = (line + " " + word).strip()
+                    if stringWidth(test, font_value[0], font_value[1]) <= value_w_max:
+                        line = test
+                    else:
+                        draw_value_line(line, y)
+                        y -= line_height
+                        line = word
+                if line:
+                    draw_value_line(line, y)
+                    y -= line_height
+
+                return y - 4  # extra spacing between rows
 
             def draw_specs_block(cnv, cushion, slot_top_y):
                 x = margin_x
@@ -244,7 +285,6 @@ def generate_confirmation():
                         ("fabric", "Fabric"),
                     ]
 
-                cnv.setFont("Helvetica", 12)
                 for key, label in fields_order:
                     if key not in cushion:
                         if key == "__shape__":
@@ -263,8 +303,8 @@ def generate_confirmation():
                             continue
                     except Exception:
                         pass
-                    cnv.drawString(x, y, f"{label} : {val}")
-                    y -= 0.20 * inch
+                    # Ensure long Fabric stays in left column, not diagram
+                    y = _draw_wrapped_kv(cnv, x, y, label, val, text_w - 2)
 
             # Build base pages
             total = len(cushions)
