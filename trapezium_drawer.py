@@ -374,7 +374,7 @@ def draw_trapezium(c,cushion):
     # Place thickness label inside the left side of the diagram so it is never cropped
     c.drawString(
         i_bl[0] + 10,
-        (i_tl[1] + i_bl[1]) / 2 - 10,
+        (i_tl[1] + i_bl[1]) / 2 - 30,
         f"Thickness: {thickness_in}\""
     )
 
