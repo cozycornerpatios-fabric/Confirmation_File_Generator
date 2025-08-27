@@ -157,7 +157,7 @@ def generate_confirmation():
 
             # Layout: specs on left, diagram on right with a small gutter so they are close
             text_ratio = 0.33
-            gutter_x = 0.04 * 72  # ~0.04 inch gap
+            gutter_x = 0.12 * 72  # ~0.12 inch gap to avoid touching details
             text_w = slot_w * text_ratio
             diagram_w_target = slot_w - text_w - gutter_x
 
