@@ -169,48 +169,89 @@ def generate_confirmation():
             base_filepath = os.path.join(PDF_DIR, base_filename)
             bc = rl_canvas.Canvas(base_filepath, pagesize=letter)
 
+            def _derive_shape_label(cushion):
+                try:
+                    if all(float(cushion.get(k, 0)) > 0 for k in ("top_base", "bottom_base", "height")):
+                        return "Trapezoid"
+                    if all(float(cushion.get(k, 0)) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
+                        return "T-Shape" if cushion.get("top_width") > cushion.get("bottom_width") else "L-Shape"
+                    if all(float(cushion.get(k, 0)) > 0 for k in ("diameter", "thickness")):
+                        return "Round"
+                except Exception:
+                    pass
+                return None
+
             def draw_specs_block(cnv, cushion, slot_top_y):
                 x = margin_x
                 y = slot_top_y - 0.15 * inch
                 cnv.setFont("Helvetica-Bold", 14)
-                title = cushion.get("cushion_name", "Cushion")
-                qty = cushion.get("quantity", 1)
-                cnv.drawString(x, y, f"Title : {title}")
-                y -= 0.26 * inch
-                cnv.setFont("Helvetica-Bold", 12)
-                cnv.drawString(x, y, f"Quantity : {qty}")
-                y -= 0.22 * inch
 
-                fields_order = [
-                    ("length", "Length"),
-                    ("width", "Width"),
-                    ("bottom_width", "Bottom Width"),
-                    ("top_width", "Top Width"),
-                    ("ear", "Ear"),
-                    ("height", "Height"),
-                    ("side", "Side"),
-                    ("side_length", "Side Length"),
-                    ("middle_length", "Middle Length"),
-                    ("diameter", "Diameter"),
-                    ("top_base", "Top Base"),
-                    ("bottom_base", "Bottom Base"),
-                    ("edge", "Clipping Edge"),
-                    ("top_thickness", "Top Thickness"),
-                    ("bottom_thickness", "Bottom Thickness"),
-                    ("thickness", "Thickness"),
-                    ("fill", "Fill"),
-                    ("fabric", "Fabric"),
-                    ("fabric_collection", "Fabric Collection"),
-                    ("fabric_option", "Fabric Option"),
-                    ("piping", "Piping"),
-                    ("ties", "Ties"),
-                    ("zipper", "Zipper Position"),
-                ]
+                shape_label = _derive_shape_label(cushion)
+
+                # For Trapezoid, print the exact ordered block requested
+                if shape_label == "Trapezoid":
+                    fields_order = [
+                        ("__shape__", "Shape"),
+                        ("top_base", "Top Base"),
+                        ("bottom_base", "Bottom Base"),
+                        ("height", "Height"),
+                        ("thickness", "Thickness"),
+                        ("zipper", "Zipper Position"),
+                        ("piping", "Piping"),
+                        ("ties", "Ties"),
+                        ("quantity", "Quantity"),
+                        ("fill", "Fill"),
+                        ("fabric", "Fabric"),
+                    ]
+                else:
+                    # Generic fallback (hide zeros), include zipper
+                    fields_order = [
+                        ("__shape__", "Shape"),
+                        ("length", "Length"),
+                        ("width", "Width"),
+                        ("bottom_width", "Bottom Width"),
+                        ("top_width", "Top Width"),
+                        ("ear", "Ear"),
+                        ("height", "Height"),
+                        ("side", "Side"),
+                        ("side_length", "Side Length"),
+                        ("middle_length", "Middle Length"),
+                        ("diameter", "Diameter"),
+                        ("top_base", "Top Base"),
+                        ("bottom_base", "Bottom Base"),
+                        ("edge", "Clipping Edge"),
+                        ("top_thickness", "Top Thickness"),
+                        ("bottom_thickness", "Bottom Thickness"),
+                        ("thickness", "Thickness"),
+                        ("zipper", "Zipper Position"),
+                        ("piping", "Piping"),
+                        ("ties", "Ties"),
+                        ("quantity", "Quantity"),
+                        ("fill", "Fill"),
+                        ("fabric", "Fabric"),
+                    ]
+
                 cnv.setFont("Helvetica", 12)
                 for key, label in fields_order:
-                    if key in cushion and cushion[key] not in (None, ""):
-                        cnv.drawString(x, y, f"{label} : {cushion[key]}")
-                        y -= 0.20 * inch
+                    if key not in cushion:
+                        if key == "__shape__":
+                            val = shape_label or cushion.get("cushion_name", "")
+                        else:
+                            continue
+                    else:
+                        val = cushion[key]
+                    # Skip empty or zero values
+                    if val is None:
+                        continue
+                    try:
+                        if isinstance(val, (int, float)) and float(val) == 0:
+                            continue
+                        if isinstance(val, str) and val.strip() == "0":
+                            continue
+                    except Exception:
+                        pass
+                    cnv.drawString(x, y, f"{label} : {val}")
+                    y -= 0.20 * inch
 
             # Build base pages
             total = len(cushions)
