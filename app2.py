@@ -300,8 +300,8 @@ def generate_confirmation():
                     shape_lbl = _derive_shape_label(current_cushion)
 
                     if shape_lbl == "Trapezoid":
-                        # Keep more room on the right so thickness callouts are not clipped
-                        left_trim   = 1.10 * 72
+                        # Trim more on the left to remove stray partial thickness text (e.g., just '3')
+                        left_trim   = 0.95 * 72
                         right_trim  = 0.70 * 72
                         bottom_trim = 0.25 * 72
                         top_trim    = H * 0.60
