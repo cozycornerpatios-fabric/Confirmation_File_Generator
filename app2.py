@@ -157,8 +157,8 @@ def generate_confirmation():
             slot_origins_y = [margin_y + i * slot_h for i in range(slots_per_page)]
 
             # Layout: specs on left, diagram on right with a small gutter so they are close
-            text_ratio = 0.45
-            gutter_x = 0.05 * 72  # ~0.05 inch gap
+            text_ratio = 0.33
+            gutter_x = 0.04 * 72  # ~0.04 inch gap
             text_w = slot_w * text_ratio
             diagram_w_target = slot_w - text_w - gutter_x
 
@@ -279,13 +279,22 @@ def generate_confirmation():
                         break
                     src_page = cushion_pages[pi]
 
-                    # Trim source page to remove the drawer's own header/specs,
-                    # keeping only the diagram area (bottom ~55% of the page)
-                    side_trim_in = 0.40
-                    left_trim   = side_trim_in * 72
-                    right_trim  = side_trim_in * 72
-                    bottom_trim = side_trim_in * 72
-                    top_trim    = H * 0.45  # remove upper portion where specs live
+                    # Trim source page to remove the drawer's own header/specs.
+                    # Use tighter crops for trapezoid pages to maximize diagram size.
+                    current_cushion = cushions[pi] if pi < len(cushions) else {}
+                    shape_lbl = _derive_shape_label(current_cushion)
+
+                    if shape_lbl == "Trapezoid":
+                        left_trim   = 1.10 * 72
+                        right_trim  = 1.10 * 72
+                        bottom_trim = 0.25 * 72
+                        top_trim    = H * 0.60
+                    else:
+                        side_trim_in = 0.40
+                        left_trim   = side_trim_in * 72
+                        right_trim  = side_trim_in * 72
+                        bottom_trim = side_trim_in * 72
+                        top_trim    = H * 0.45
 
                     try:
                         src_page.cropbox.lower_left  = (left_trim, bottom_trim)
