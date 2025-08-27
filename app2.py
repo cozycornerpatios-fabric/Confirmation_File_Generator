@@ -137,8 +137,8 @@ def generate_confirmation():
 
             # Adaptive N-up (try 3-up to reduce whitespace, else 2-up)
             W, H = letter
-            margin_x = 0.20 * 72  # ~0.20 inch for larger content
-            margin_y = 0.20 * 72
+            margin_x =  72  # ~0.20 inch for larger content
+            margin_y =  72
 
             def compute_scale(slots):
                 sx = (W - 2 * margin_x) / W
