@@ -18,22 +18,60 @@ from tapered_bolster_drawer import draw_tapered_bolster
 from counter_utils import increment_counter
 from left_cushion_drawer import draw_left_cushion
 
-
-
-
 app = Flask(__name__)
 PDF_DIR = os.path.join(os.getcwd(), "pdfs")
 os.makedirs(PDF_DIR, exist_ok=True)
+
+def draw_cushion_by_shape(c, cushion):
+    """
+    Calls the appropriate drawer based on available dimensions.
+    Uses your original shape-selection logic.
+    """
+    if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
+        if cushion.get("top_width") > cushion.get("bottom_width"):
+            draw_t_shape(c, cushion)
+        else:
+            draw_l_shape(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("diameter", "thickness")):
+        name = cushion.get("cushion_name", "").lower()
+        if "semi" in name:
+            draw_semi_round(c, cushion)
+        else:
+            draw_round(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("front_width_straight", "back_width_straight","thickness","front_width_curved","back_width_curved")):
+        draw_curved_cushion(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("top_thickness", "bottom_thickness","height","length")):
+        draw_tapered_bolster(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("width", "side_length","middle_length")):
+        draw_curved(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("side", "thickness")):
+        draw_equilateral_triangle(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "length")):
+        name = cushion.get("cushion_name", "").lower()
+        if "left" in name:
+            draw_left_cushion(c, cushion)
+        else:
+            draw_right_cushion(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "height","edge")):
+        draw_clipped_trapeze(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
+        draw_trapezium(c, cushion)
+    elif all(cushion.get(k, 0) > 0 for k in ("width", "length", "thickness")):
+        name = cushion.get("cushion_name", "").lower()
+        if "triangle" in name:
+            draw_right_triangle(c, cushion)
+        else:
+            draw_rectangle(c, cushion)
+    else:
+        raise ValueError("Unable to determine cushion shape. Missing key dimensions.")
 
 @app.route('/generate-confirmation', methods=['POST'])
 def generate_confirmation():
     try:
         print(f"Received request to /generate-confirmation")
-        # Count API calls
         api_call_number = increment_counter()
         print(f"API call count: {api_call_number}")
         
-        # Log request data for debugging
         print(f"Request headers: {dict(request.headers)}")
         data = request.get_json(force=True)
         print(f"Request data received: {data}")
@@ -50,10 +88,12 @@ def generate_confirmation():
 
         from reportlab.pdfgen import canvas
         from reportlab.lib.units import inch
+        from reportlab.lib import colors
+
         c = canvas.Canvas(filepath, pagesize=letter)
         page_width, page_height = letter
 
-        # Page 1 - Customer Info
+        # ---------- Page 1: Customer Info ----------
         c.setFont("Helvetica-Bold", 20)
         c.drawString(1 * inch, page_height - 1 * inch, "ORDER CONFIRMATION")
         y_left = page_height - 1.6 * inch
@@ -78,53 +118,72 @@ def generate_confirmation():
             y_left -= 0.25 * inch
         c.showPage()
 
+        # ---------- Cushion Pages: 2 per page ----------
         print(f"Processing {len(cushions)} cushions...")
-        for i, cushion in enumerate(cushions):
-            print(f"Processing cushion {i+1}: {cushion.get('cushion_name', 'Unnamed')}")
-            if all(cushion.get(k, 0) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
-                if cushion.get("top_width") > cushion.get("bottom_width"):
-                    print(f"  Drawing T-shape cushion")
-                    draw_t_shape(c, cushion)
-                else:
-                    print(f"  Drawing L-shape cushion")
-                    draw_l_shape(c, cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("diameter", "thickness")):
-                name = cushion.get("cushion_name", "").lower()
-                if "semi" in name:
-                    draw_semi_round(c, cushion)
-                else:
-                    draw_round(c, cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("front_width_straight", "back_width_straight","thickness","front_width_curved","back_width_curved")):
-                draw_curved_cushion(c,cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("top_thickness", "bottom_thickness","height","length")):
-                draw_tapered_bolster(c,cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("width", "side_length","middle_length")):
-                draw_curved(c,cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("side", "thickness")):
-                draw_equilateral_triangle(c, cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "length")):
-                name = cushion.get("cushion_name", "").lower()
-                if "left" in name:
-                    draw_left_cushion(c, cushion)
-                else : 
-                    draw_right_cushion(c,cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("top_width", "bottom_width", "height","edge")):
-                draw_clipped_trapeze(c,cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("top_base", "bottom_base", "height")):
-                draw_trapezium(c, cushion)
-            elif all(cushion.get(k, 0) > 0 for k in ("width", "length", "thickness")):
-                name = cushion.get("cushion_name", "").lower()
-                if "triangle" in name:
-                    draw_right_triangle(c, cushion)
-                else: 
-                    draw_rectangle(c, cushion)
-            else:
-                raise ValueError("Unable to determine cushion shape. Missing key dimensions.")
+        margin = 0.75 * inch
+        slot_gap = 0.35 * inch  # gap between title and drawing inside a slot
+        slot_count_per_page = 2
+        usable_height = page_height - 2 * margin
+        slot_height = usable_height / slot_count_per_page
+        slot_width = page_width - 2 * margin
 
+        def render_cushion_slot(cushion, slot_index_on_page):
+            """
+            slot_index_on_page: 0 for top slot, 1 for bottom slot
+            Draws heading + calls drawer inside a translated coordinate system.
+            """
+            # Slot origin (bottom-left of the slot)
+            x0 = margin
+            # From top: top slot starts near page top, bottom slot at page bottom
+            y0 = page_height - margin - (slot_index_on_page + 1) * slot_height
 
+            # Draw slot header
+            c.setFont("Helvetica-Bold", 13)
+            title = cushion.get("cushion_name", "Cushion").strip() or "Cushion"
+            c.drawString(x0, y0 + slot_height - 0.3 * inch, f"{title}")
 
+            # Optional: light slot boundary (helps visually separate)
+            c.setStrokeColor(colors.lightgrey)
+            c.rect(x0, y0, slot_width, slot_height, stroke=1, fill=0)
+            c.setStrokeColor(colors.black)
 
+            # Translate into the slot with some inner padding
+            inner_pad_x = 0.3 * inch
+            inner_pad_y = 0.5 * inch
+            c.saveState()
+            c.translate(x0 + inner_pad_x, y0 + inner_pad_y)
+
+            # If your drawer functions respect the current origin (recommended),
+            # they'll render inside this slot. If they draw at absolute page coords,
+            # consider updating them to draw relative to (0, 0).
+            try:
+                draw_cushion_by_shape(c, cushion)
+            except Exception as e:
+                # If a single cushion fails, mark it visibly and continue
+                c.restoreState()
+                c.setFillColor(colors.red)
+                c.setFont("Helvetica", 12)
+                c.drawString(x0 + inner_pad_x, y0 + inner_pad_y, f"Error drawing cushion: {e}")
+                c.setFillColor(colors.black)
+                return
+
+            c.restoreState()
+
+        # Iterate cushions, two per page
+        for idx, cushion in enumerate(cushions):
+            if idx % slot_count_per_page == 0:
+                # Start a fresh page (except immediately after customer info we already did showPage)
+                if idx != 0:
+                    c.showPage()
+
+            slot_index = idx % slot_count_per_page  # 0 or 1
+            # Log
+            print(f"Processing cushion {idx+1}: {cushion.get('cushion_name', 'Unnamed')} -> slot {slot_index} on page")
+            render_cushion_slot(cushion, slot_index)
+
+        # If the last page wasn't finalized (e.g., only one slot used), still save
         c.save()
+
         pdf_url = url_for('serve_pdf', filename=filename, _external=True)
         print(f"PDF generated successfully: {filename}")
         print(f"PDF URL: {pdf_url}")
@@ -144,5 +203,6 @@ def index():
     return render_template_string(open("form.html").read())
 
 if __name__ == '__main__':
+    from reportlab.lib.units import inch  # ensure available in main
     port = int(os.environ.get("PORT", 10000))
     app.run(debug=True, host='0.0.0.0', port=port)
