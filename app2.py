@@ -137,8 +137,8 @@ def generate_confirmation():
 
             # Adaptive N-up (try 3-up to reduce whitespace, else 2-up)
             W, H = letter
-            margin_x =  72  # ~0.20 inch for larger content
-            margin_y =  72
+            margin_x = 0.20 * 72  # ~0.20 inch for larger content
+            margin_y = 0.20 * 72
 
             def compute_scale(slots):
                 sx = (W - 2 * margin_x) / W
@@ -148,11 +148,13 @@ def generate_confirmation():
             s3 = compute_scale(3)
             # Prefer 2-up unless 3-up still yields large-enough scale
             slots_per_page = 3 if s3 >= 0.50 else 2
-            s = compute_scale(slots_per_page)
-            tx = (W - s * W) / 2
 
-            # Precompute vertical origins bottom-up
-            slot_origins_y = [margin_y + i * s * H for i in range(slots_per_page)]
+            # Slot dimensions (target area for each cushion diagram)
+            slot_w = W - 2 * margin_x
+            slot_h = (H - 2 * margin_y) / slots_per_page
+
+            # Precompute vertical origins for slots (bottom-up)
+            slot_origins_y = [margin_y + i * slot_h for i in range(slots_per_page)]
 
             # Process cushion pages starting from index 1 (skip cover)
             cushion_pages = reader.pages[1:]
@@ -163,8 +165,31 @@ def generate_confirmation():
                     if pi >= len(cushion_pages):
                         break
                     src_page = cushion_pages[pi]
-                    ty = slot_origins_y[si]
-                    t = Transformation().scale(s).translate(tx, ty)
+
+                    # Trim constant margins from source to remove drawer whitespace
+                    trim_in = 0.55  # inches to trim from each side; adjust as needed
+                    left_trim   = trim_in * 72
+                    right_trim  = trim_in * 72
+                    top_trim    = trim_in * 72
+                    bottom_trim = trim_in * 72
+
+                    try:
+                        src_page.cropbox.lower_left  = (left_trim, bottom_trim)
+                        src_page.cropbox.upper_right = (W - right_trim, H - top_trim)
+                    except Exception:
+                        pass
+
+                    visible_w = W - left_trim - right_trim
+                    visible_h = H - top_trim - bottom_trim
+
+                    # Scale to fit the slot
+                    s_local = min(slot_w / visible_w, slot_h / visible_h)
+
+                    # Center the visible area within the slot
+                    tx = (W - s_local * visible_w) / 2 - s_local * left_trim
+                    ty = slot_origins_y[si] + (slot_h - s_local * visible_h) / 2 - s_local * bottom_trim
+
+                    t = Transformation().scale(s_local).translate(tx, ty)
                     new_page.merge_transformed_page(src_page, t)
 
             with open(filepath, "wb") as f_out:
