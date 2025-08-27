@@ -135,34 +135,36 @@ def generate_confirmation():
             if len(reader.pages) >= 1:
                 writer.add_page(reader.pages[0])
 
-            # 2-up the remaining pages (each originally one cushion per page)
+            # Adaptive N-up (try 3-up to reduce whitespace, else 2-up)
             W, H = letter
-            margin_x = 0.5 * 72  # 0.5 inch in points
-            margin_y = 0.5 * 72
-            # uniform scale to fit two pages vertically and within horizontal margins
-            sx = (W - 2 * margin_x) / W
-            sy = ((H - 2 * margin_y) / 2) / H
-            s = min(sx, sy)
+            margin_x = 0.35 * 72  # ~0.35 inch
+            margin_y = 0.35 * 72
 
+            def compute_scale(slots):
+                sx = (W - 2 * margin_x) / W
+                sy = ((H - 2 * margin_y) / slots) / H
+                return min(sx, sy)
+
+            s3 = compute_scale(3)
+            slots_per_page = 3 if s3 >= 0.31 else 2
+            s = compute_scale(slots_per_page)
             tx = (W - s * W) / 2
-            ty_bottom = margin_y
-            ty_top = H - margin_y - s * H
 
-            # Process pages in pairs starting from index 1
+            # Precompute vertical origins bottom-up
+            slot_origins_y = [margin_y + i * s * H for i in range(slots_per_page)]
+
+            # Process cushion pages starting from index 1 (skip cover)
             cushion_pages = reader.pages[1:]
-            for idx in range(0, len(cushion_pages), 2):
+            for base in range(0, len(cushion_pages), slots_per_page):
                 new_page = writer.add_blank_page(width=W, height=H)
-
-                # Top slot
-                top_page = cushion_pages[idx]
-                t_top = Transformation().scale(s).translate(tx, ty_top)
-                new_page.merge_transformed_page(top_page, t_top)
-
-                # Bottom slot (if exists)
-                if idx + 1 < len(cushion_pages):
-                    bottom_page = cushion_pages[idx + 1]
-                    t_bottom = Transformation().scale(s).translate(tx, ty_bottom)
-                    new_page.merge_transformed_page(bottom_page, t_bottom)
+                for si in range(slots_per_page):
+                    pi = base + si
+                    if pi >= len(cushion_pages):
+                        break
+                    src_page = cushion_pages[pi]
+                    ty = slot_origins_y[si]
+                    t = Transformation().scale(s).translate(tx, ty)
+                    new_page.merge_transformed_page(src_page, t)
 
             with open(filepath, "wb") as f_out:
                 writer.write(f_out)
