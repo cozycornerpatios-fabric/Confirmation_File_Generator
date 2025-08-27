@@ -156,18 +156,90 @@ def generate_confirmation():
             # Precompute vertical origins for slots (bottom-up)
             slot_origins_y = [margin_y + i * slot_h for i in range(slots_per_page)]
 
-            # Process cushion pages starting from index 1 (skip cover)
-            cushion_pages = reader.pages[1:]
-            for base in range(0, len(cushion_pages), slots_per_page):
-                new_page = writer.add_blank_page(width=W, height=H)
+            # Layout: specs on left, diagram on right with a small gutter so they are close
+            text_ratio = 0.45
+            gutter_x = 0.05 * 72  # ~0.05 inch gap
+            text_w = slot_w * text_ratio
+            diagram_w_target = slot_w - text_w - gutter_x
+
+            # Create base pages with specs in the left column for each slot
+            from reportlab.pdfgen import canvas as rl_canvas
+            from reportlab.lib.units import inch
+            base_filename = f"layout_{uuid.uuid4().hex}.pdf"
+            base_filepath = os.path.join(PDF_DIR, base_filename)
+            bc = rl_canvas.Canvas(base_filepath, pagesize=letter)
+
+            def draw_specs_block(cnv, cushion, slot_top_y):
+                x = margin_x
+                y = slot_top_y - 0.15 * inch
+                cnv.setFont("Helvetica-Bold", 14)
+                title = cushion.get("cushion_name", "Cushion")
+                qty = cushion.get("quantity", 1)
+                cnv.drawString(x, y, f"Title : {title}")
+                y -= 0.26 * inch
+                cnv.setFont("Helvetica-Bold", 12)
+                cnv.drawString(x, y, f"Quantity : {qty}")
+                y -= 0.22 * inch
+
+                fields_order = [
+                    ("length", "Length"),
+                    ("width", "Width"),
+                    ("bottom_width", "Bottom Width"),
+                    ("top_width", "Top Width"),
+                    ("ear", "Ear"),
+                    ("height", "Height"),
+                    ("side", "Side"),
+                    ("side_length", "Side Length"),
+                    ("middle_length", "Middle Length"),
+                    ("diameter", "Diameter"),
+                    ("top_base", "Top Base"),
+                    ("bottom_base", "Bottom Base"),
+                    ("edge", "Clipping Edge"),
+                    ("top_thickness", "Top Thickness"),
+                    ("bottom_thickness", "Bottom Thickness"),
+                    ("thickness", "Thickness"),
+                    ("fill", "Fill"),
+                    ("fabric", "Fabric"),
+                    ("fabric_collection", "Fabric Collection"),
+                    ("fabric_option", "Fabric Option"),
+                    ("piping", "Piping"),
+                    ("ties", "Ties"),
+                    ("zipper", "Zipper Position"),
+                ]
+                cnv.setFont("Helvetica", 12)
+                for key, label in fields_order:
+                    if key in cushion and cushion[key] not in (None, ""):
+                        cnv.drawString(x, y, f"{label} : {cushion[key]}")
+                        y -= 0.20 * inch
+
+            # Build base pages
+            total = len(cushions)
+            page_count = (total + slots_per_page - 1) // slots_per_page
+            for p in range(page_count):
                 for si in range(slots_per_page):
-                    pi = base + si
+                    idx = p * slots_per_page + si
+                    if idx >= total:
+                        break
+                    # Top y for this slot
+                    slot_top_y = slot_origins_y[si] + slot_h
+                    draw_specs_block(bc, cushions[idx], slot_top_y)
+                bc.showPage()
+            bc.save()
+
+            base_reader = PdfReader(base_filepath)
+
+            # Process cushion pages starting from index 1 (skip cover) and compose onto base pages
+            cushion_pages = reader.pages[1:]
+            for p in range(page_count):
+                new_page = writer.add_page(base_reader.pages[p])
+                for si in range(slots_per_page):
+                    pi = p * slots_per_page + si
                     if pi >= len(cushion_pages):
                         break
                     src_page = cushion_pages[pi]
 
                     # Trim constant margins from source to remove drawer whitespace
-                    trim_in = 0.55  # inches to trim from each side; adjust as needed
+                    trim_in = 0.55
                     left_trim   = trim_in * 72
                     right_trim  = trim_in * 72
                     top_trim    = trim_in * 72
@@ -182,15 +254,22 @@ def generate_confirmation():
                     visible_w = W - left_trim - right_trim
                     visible_h = H - top_trim - bottom_trim
 
-                    # Scale to fit the slot
-                    s_local = min(slot_w / visible_w, slot_h / visible_h)
+                    # Scale to fit the diagram region on the right side
+                    s_local = min(diagram_w_target / visible_w, slot_h / visible_h)
 
-                    # Center the visible area within the slot
-                    tx = (W - s_local * visible_w) / 2 - s_local * left_trim
+                    # Place diagram flush against the text column with small gutter
+                    right_x0 = margin_x + text_w + gutter_x
+                    tx = right_x0 - s_local * left_trim
                     ty = slot_origins_y[si] + (slot_h - s_local * visible_h) / 2 - s_local * bottom_trim
 
                     t = Transformation().scale(s_local).translate(tx, ty)
                     new_page.merge_transformed_page(src_page, t)
+
+            # cleanup base layout file
+            try:
+                os.remove(base_filepath)
+            except Exception:
+                pass
 
             with open(filepath, "wb") as f_out:
                 writer.write(f_out)
