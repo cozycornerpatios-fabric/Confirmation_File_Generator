@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory, url_for, render_
 from reportlab.lib.pagesizes import letter
 import os
 import uuid
+from pypdf import PdfReader, PdfWriter, Transformation
 from rectangle_drawer import draw_rectangle
 from trapezium_drawer import draw_trapezium
 from L_shaped_drawer import draw_l_shape
@@ -47,10 +48,13 @@ def generate_confirmation():
 
         filename = f"confirmation_{uuid.uuid4().hex}.pdf"
         filepath = os.path.join(PDF_DIR, filename)
+        # Generate initial single-cushion-per-page PDF, then 2-up it into final filepath
+        raw_filename = f"raw_{uuid.uuid4().hex}.pdf"
+        raw_filepath = os.path.join(PDF_DIR, raw_filename)
 
         from reportlab.pdfgen import canvas
         from reportlab.lib.units import inch
-        c = canvas.Canvas(filepath, pagesize=letter)
+        c = canvas.Canvas(raw_filepath, pagesize=letter)
         page_width, page_height = letter
 
         # Page 1 - Customer Info
@@ -120,11 +124,55 @@ def generate_confirmation():
                     draw_rectangle(c, cushion)
             else:
                 raise ValueError("Unable to determine cushion shape. Missing key dimensions.")
-
-
-
-
+        # Finish raw PDF and then produce a 2-up final PDF (two cushions per page)
         c.save()
+
+        try:
+            reader = PdfReader(raw_filepath)
+            writer = PdfWriter()
+
+            # Keep the first page (customer info) as-is
+            if len(reader.pages) >= 1:
+                writer.add_page(reader.pages[0])
+
+            # 2-up the remaining pages (each originally one cushion per page)
+            W, H = letter
+            margin_x = 0.5 * 72  # 0.5 inch in points
+            margin_y = 0.5 * 72
+            # uniform scale to fit two pages vertically and within horizontal margins
+            sx = (W - 2 * margin_x) / W
+            sy = ((H - 2 * margin_y) / 2) / H
+            s = min(sx, sy)
+
+            tx = (W - s * W) / 2
+            ty_bottom = margin_y
+            ty_top = H - margin_y - s * H
+
+            # Process pages in pairs starting from index 1
+            cushion_pages = reader.pages[1:]
+            for idx in range(0, len(cushion_pages), 2):
+                new_page = writer.add_blank_page(width=W, height=H)
+
+                # Top slot
+                top_page = cushion_pages[idx]
+                t_top = Transformation().scale(s).translate(tx, ty_top)
+                new_page.merge_transformed_page(top_page, t_top)
+
+                # Bottom slot (if exists)
+                if idx + 1 < len(cushion_pages):
+                    bottom_page = cushion_pages[idx + 1]
+                    t_bottom = Transformation().scale(s).translate(tx, ty_bottom)
+                    new_page.merge_transformed_page(bottom_page, t_bottom)
+
+            with open(filepath, "wb") as f_out:
+                writer.write(f_out)
+        finally:
+            # Cleanup raw file
+            try:
+                os.remove(raw_filepath)
+            except Exception:
+                pass
+
         pdf_url = url_for('serve_pdf', filename=filename, _external=True)
         print(f"PDF generated successfully: {filename}")
         print(f"PDF URL: {pdf_url}")
