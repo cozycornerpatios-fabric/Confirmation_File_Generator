@@ -276,17 +276,21 @@ def generate_confirmation():
                     slot_top_y = slots_top_y[si]
                     draw_specs_block(bc, cushions[idx], slot_top_y)
 
-                    # Also place a universal thickness label near the diagram area on the right
+                    # Also place a universal thickness label near the diagram area on the LEFT side of the diagram
                     t_val = _thickness_value(cushions[idx])
                     if t_val:
                         cnv = bc
                         cnv.setFont("Helvetica", 10)
                         cnv.setFillColorRGB(0, 0, 0)
                         right_x0 = margin_x + text_w + gutter_x
-                        # position label just to the right of the diagram region, vertically centered in the slot
-                        x_label = right_x0 + diagram_w_target + 0.06 * 72
+                        # position label just to the LEFT of the diagram region, vertically centered in the slot
+                        from reportlab.pdfbase.pdfmetrics import stringWidth
+                        label_text = f"Thickness = {t_val}"
+                        label_w = stringWidth(label_text, "Helvetica", 10)
+                        gap = 0.06 * 72
+                        x_label = right_x0 - gap - label_w
                         y_label = slot_top_y - (slot_h / 2)
-                        cnv.drawString(x_label, y_label, f"Thickness = {t_val}")
+                        cnv.drawString(x_label, y_label, label_text)
                 bc.showPage()
             bc.save()
 
