@@ -170,6 +170,9 @@ def generate_confirmation():
 
             def _derive_shape_label(cushion):
                 try:
+                    # Clipped trapeze first (has explicit edge)
+                    if all(float(cushion.get(k, 0)) > 0 for k in ("top_width", "bottom_width", "height")) and cushion.get("edge") not in (None, "", 0, "0"):
+                        return "Clipped Trapeze"
                     if all(float(cushion.get(k, 0)) > 0 for k in ("top_base", "bottom_base", "height")):
                         return "Trapezoid"
                     if all(float(cushion.get(k, 0)) > 0 for k in ("length", "top_width", "bottom_width", "ear", "thickness")):
@@ -275,20 +278,7 @@ def generate_confirmation():
                     slot_top_y = slots_top_y[si]
                     draw_specs_block(bc, cushions[idx], slot_top_y)
 
-                    # Single thickness label on the LEFT of diagram so it's always labeled
-                    t_val = _thickness_value(cushions[idx])
-                    if t_val:
-                        cnv = bc
-                        cnv.setFont("Helvetica", 10)
-                        cnv.setFillColorRGB(0, 0, 0)
-                        right_x0 = margin_x + text_w + gutter_x
-                        from reportlab.pdfbase.pdfmetrics import stringWidth
-                        label_text = f"Thickness = {t_val}"
-                        label_w = stringWidth(label_text, "Helvetica", 10)
-                        gap = 0.06 * 72
-                        x_label = right_x0 - gap - label_w
-                        y_label = slot_top_y - (slot_h / 2)
-                        cnv.drawString(x_label, y_label, label_text)
+                    # Thickness label is rendered inside each drawer; do not overlay to avoid duplicates
                 bc.showPage()
             bc.save()
 
