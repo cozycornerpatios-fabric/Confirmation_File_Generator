@@ -67,7 +67,7 @@ def generate_confirmation():
         bottom_margin = 0.8 * inch
         
         def kv_line(label, value):
-            global y_left
+            nonlocal y_left
             if y_left < bottom_margin + line_gap:
                 c.showPage()
                 c.setFont("Helvetica-Bold", 20)
@@ -118,7 +118,7 @@ def generate_confirmation():
 
         def wrapped_value(label, value):
             """Draw label: value with simple word-wrap for long values (e.g., fabric)."""
-            global y_left
+            nonlocal y_left
             lab = f"{label}: "
             c.setFont("Helvetica-Bold", 12)
             lab_w = stringWidth(lab, "Helvetica-Bold", 12)
