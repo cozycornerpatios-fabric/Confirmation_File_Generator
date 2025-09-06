@@ -54,6 +54,7 @@ def generate_confirmation():
 
         from reportlab.pdfgen import canvas
         from reportlab.lib.units import inch
+        from reportlab.pdfbase.pdfmetrics import stringWidth
         c = canvas.Canvas(raw_filepath, pagesize=letter)
         page_width, page_height = letter
 
@@ -62,6 +63,61 @@ def generate_confirmation():
         c.setFont("Helvetica-Bold", 20)
         c.drawString(1 * inch, page_height - 1 * inch, "ORDER CONFIRMATION")
         y_left = page_height - 1.6 * inch
+        left_x = 1.0 * inch
+        val_x = 2.8 * inch
+        line_gap = 0.25 * inch
+        bottom_margin = 0.8 * inch
+        max_text_width = (page_width - 1.0 - inch) * left_x
+
+        def new_page_header():
+            nonlocal y_left
+            c.showPage()
+            c.setFont("Helvetica-Bold", 20)
+            c.drawString(1 * inch, page_height - 1 * inch, "ORDER CONFIRMATION")
+            y_left = page_height - 1.6 * inch
+
+        def kv_line(label, value):
+            """Simple key-value on same line; wraps to new page if needed."""
+            nonlocal y_left
+            if y_left < bottom_margin + line_gap:
+                new_page_header()
+            if label:
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(left_x, y_left, f"{label}:")
+                c.setFont("Helvetica", 12)
+                c.drawString(val_x, y_left, str(value))
+            else:
+                c.setFont("Helvetica", 12)
+                c.drawString(left_x + 0.2 * inch, y_left, str(value))
+            y_left -= line_gap
+
+        def wrapped_value(label, value):
+            """Draw label: value with simple wrapping for long values (e.g., Fabric)."""
+            nonlocal y_left
+            lab = f"{label}: "
+            c.setFont("Helvetica-Bold", 12)
+            lab_w = stringWidth(lab, "Helvetica-Bold", 12)
+            if y_left < bottom_margin + 0.25*inch:
+                new_page_header()
+            c.drawString(left_x, y_left, lab)
+            c.setFont("Helvetica", 12)
+            words = str(value).split()
+            line = ""
+            while words:
+                test = (line + " " + words[0]).strip()
+                # measure full line width with label on first line
+                full_w = stringWidth(test if lab_w == 0 else (lab + test), "Helvetica", 12)
+                if full_w <= max_text_width:
+                    line = test
+                    words.pop(0)
+                    if not words:
+                        c.drawString(left_x + lab_w, y_left, line)
+                        y_left -= 0.20 * inch
+                else:
+                    c.drawString(left_x + lab_w, y_left, line)
+                    y_left -= 0.20 * inch
+                    line = ""
+                    lab_w = 0  
         details = [
             ("Customer Name", customer_name),
             ("Order Number", order_id),
