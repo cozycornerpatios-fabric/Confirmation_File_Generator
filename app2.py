@@ -137,7 +137,7 @@ def generate_confirmation():
                 c.setFont("Helvetica", 12)
                 c.drawString(1.2 * inch, y_left, value)
             y_left -= 0.25 * inch
-        c.showPage()
+        # c.showPage()
 
 
 
