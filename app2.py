@@ -58,29 +58,138 @@ def generate_confirmation():
         page_width, page_height = letter
 
         # Page 1 - Customer Info
+       # Page 1 - Customer Info + Cushion Details (on same page)
+c.setFont("Helvetica-Bold", 20)
+c.drawString(1 * inch, page_height - 1 * inch, "ORDER CONFIRMATION")
+
+y_left = page_height - 1.6 * inch
+left_x = 1.0 * inch
+val_x  = 2.8 * inch
+line_gap = 0.25 * inch
+bottom_margin = 0.8 * inch
+
+def kv_line(label, value):
+    global y_left
+    if y_left < bottom_margin + line_gap:
+        c.showPage()
         c.setFont("Helvetica-Bold", 20)
         c.drawString(1 * inch, page_height - 1 * inch, "ORDER CONFIRMATION")
         y_left = page_height - 1.6 * inch
-        details = [
-            ("Customer Name", customer_name),
-            ("Order Number", order_id),
-            ("Email", email),
-            ("Shipping Address", "")
-        ] + [("", line) for line in shipping_address] + [
-            ("Billing Address", "")
-        ] + [("", line) for line in billing_address]
+    if label:
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(left_x, y_left, f"{label}:")
+        c.setFont("Helvetica", 12)
+        c.drawString(val_x, y_left, str(value))
+    else:
+        c.setFont("Helvetica", 12)
+        c.drawString(left_x + 0.2 * inch, y_left, str(value))
+    y_left -= line_gap
 
-        for label, value in details:
-            if label:
-                c.setFont("Helvetica-Bold", 12)
-                c.drawString(1 * inch, y_left, f"{label}:")
-                c.setFont("Helvetica", 12)
-                c.drawString(2.8 * inch, y_left, value)
-            elif value:
-                c.setFont("Helvetica", 12)
-                c.drawString(1.2 * inch, y_left, value)
-            y_left -= 0.25 * inch
+# ---- Customer/Billing blocks
+details = [
+    ("Customer Name", customer_name),
+    ("Order Number", order_id),
+    ("Email", email),
+    ("Shipping Address", ""),
+] + [("", line) for line in shipping_address] + [
+    ("Billing Address", ""),
+] + [("", line) for line in billing_address]
+
+for label, value in details:
+    kv_line(label, value)
+
+# ---- Divider + Cushion Details heading
+y_left -= 0.10 * inch
+if y_left < bottom_margin + 1.0 * inch:
+    c.showPage()
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(1 * inch, page_height - 1 * inch, "ORDER CONFIRMATION")
+    y_left = page_height - 1.6 * inch
+
+c.setLineWidth(0.5)
+c.line(left_x, y_left, page_width - 1.0 * inch, y_left)
+y_left -= 0.3 * inch
+
+c.setFont("Helvetica-Bold", 16)
+c.drawString(left_x, y_left, "Cushion Details")
+y_left -= 0.35 * inch
+
+# ---- Print a compact spec list for each cushion
+from reportlab.pdfbase.pdfmetrics import stringWidth
+max_text_width = (page_width - 1.0 * inch) - left_x
+
+def wrapped_value(label, value):
+    """Draw label: value with simple word-wrap for long values (e.g., fabric)."""
+    global y_left
+    lab = f"{label}: "
+    c.setFont("Helvetica-Bold", 12)
+    lab_w = stringWidth(lab, "Helvetica-Bold", 12)
+    c.drawString(left_x, y_left, lab)
+    c.setFont("Helvetica", 12)
+    words = str(value).split()
+    line = ""
+    while words:
+        test = (line + " " + words[0]).strip()
+        if stringWidth(lab + test, "Helvetica", 12) <= max_text_width:
+            line = test
+            words.pop(0)
+            if not words:
+                c.drawString(left_x + lab_w, y_left, line)
+                y_left -= 0.20 * inch
+        else:
+            c.drawString(left_x + lab_w, y_left, line)
+            y_left -= 0.20 * inch
+            line = ""
+            lab_w = 0  # subsequent wrapped lines have no bold label
+
+for i, cu in enumerate(cushions, 1):
+    if y_left < bottom_margin + 1.0 * inch:
         c.showPage()
+        c.setFont("Helvetica-Bold", 20)
+        c.drawString(1 * inch, page_height - 1 * inch, "ORDER CONFIRMATION")
+        y_left = page_height - 1.6 * inch
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(left_x, y_left, "Cushion Details (cont.)")
+        y_left -= 0.35 * inch
+
+    # Cushion header
+    name = cu.get("cushion_name") or cu.get("name", "")
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(left_x, y_left, f"Cushion {i}" + (f" — {name}" if name else ""))
+    y_left -= 0.22 * inch
+
+    # Pick common keys to show (only if present & non-zero)
+    show_keys = [
+        ("Shape", None),  # derive from name if you want, optional
+        ("Length", cu.get("length")),
+        ("Width", cu.get("width")),
+        ("Top Width", cu.get("top_width")),
+        ("Bottom Width", cu.get("bottom_width")),
+        ("Height", cu.get("height")),
+        ("Diameter", cu.get("diameter")),
+        ("Thickness", cu.get("thickness") or cu.get("top_thickness") or cu.get("bottom_thickness")),
+        ("Zipper Position", cu.get("zipper")),
+        ("Piping", cu.get("piping")),
+        ("Ties", cu.get("ties")),
+        ("Quantity", cu.get("quantity")),
+        ("Fill", cu.get("fill")),
+        ("Fabric", cu.get("fabric")),
+    ]
+
+    for label, value in show_keys:
+        if value in (None, "", 0, "0"):
+            continue
+        # Fabric can be long → wrap it
+        if label == "Fabric":
+            wrapped_value(label, value)
+        else:
+            kv_line(label, value)
+
+    y_left -= 0.08 * inch  # small spacing between cushions
+
+# Now advance to the next page for your diagram pages
+c.showPage()
+
 
         print(f"Processing {len(cushions)} cushions...")
         for i, cushion in enumerate(cushions):
